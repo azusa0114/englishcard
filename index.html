@@ -4,70 +4,197 @@
   <meta charset="UTF-8" />
   <title>単語カード</title>
   <style>
-    .card { 
-      border: 1px solid #ccc; 
-      padding: 20px; 
-      margin-bottom: 10px; 
-      cursor: pointer;
+    body {
+      font-family: sans-serif;
+      max-width: 400px;
+      margin: 20px auto;
       user-select: none;
-      width: 300px;
+    }
+    #card-container {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backface-visibility: hidden;
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0; top: 0;
+      padding: 20px;
+      box-sizing: border-box;
+      backface-visibility: hidden;
     }
     .card-front {
-      font-weight: bold;
+      background: #fff;
+      z-index: 2;
     }
     .card-back {
-      color: #555;
-      display: none;
+      background: #f0f0f0;
+      transform: rotateY(180deg);
+      z-index: 1;
     }
     .card.flipped .card-front {
-      display: none;
+      transform: rotateY(180deg);
+      z-index: 1;
     }
     .card.flipped .card-back {
-      display: block;
+      transform: rotateY(0deg);
+      z-index: 2;
+    }
+    .checkbox-container {
+      margin-top: 10px;
+    }
+    .pronunciation-audio {
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
-<center>
   <div id="card-container"></div>
-</center>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2VWN6QtWFSjmqftBs9PLXPsE4lNQ5fhfJZ5uhQkxUIj0ICZsY6UAdU1pMqJ8vHD7mROyt3YJ8JkxF/pub?gid=0&single=true&output=csv';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2VWN6QtWFSjmqftBs9PLXPsE4lNQ5fhfJZ5uhQkxUIj0ICZsY6UAdU1pMqJ8vHD7mROyt3YJ8JkxF/pub?output=csv';
 
-    // PapaParseでCSVをfetch＆パース
+    let cardsData = [];
+    let currentIndex = 0;
+    let flipped = false;
+
+    // ローカルストレージから「学習済み」状態を取得・保存
+    function loadRemembered() {
+      const json = localStorage.getItem('remembered') || '{}';
+      return JSON.parse(json);
+    }
+    function saveRemembered(obj) {
+      localStorage.setItem('remembered', JSON.stringify(obj));
+    }
+    let remembered = loadRemembered();
+
+    function createCard(data, index) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      // 表面
+      const front = document.createElement('div');
+      front.className = 'card-front';
+      front.innerHTML = `
+        <h2>${data.word}</h2>
+        <p>${data.phonetic}</p>
+        <audio class="pronunciation-audio" controls src="${data.pronounciation}"></audio>
+        <p><i>${data.example}</i></p>
+      `;
+
+      // 裏面
+      const back = document.createElement('div');
+      back.className = 'card-back';
+      back.innerHTML = `<p>${data.meaning}</p>`;
+
+      // チェックボックス
+      const checkboxContainer = document.createElement('div');
+      checkboxContainer.className = 'checkbox-container';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'chk-'+index;
+      checkbox.checked = remembered[data.word] === true;
+      const label = document.createElement('label');
+      label.htmlFor = 'chk-'+index;
+      label.textContent = '学習済み';
+
+      checkboxContainer.appendChild(checkbox);
+      checkboxContainer.appendChild(label);
+      back.appendChild(checkboxContainer);
+
+      // チェックボックスの変更で記憶更新
+      checkbox.addEventListener('change', () => {
+        remembered[data.word] = checkbox.checked;
+        saveRemembered(remembered);
+      });
+
+      card.appendChild(front);
+      card.appendChild(back);
+
+      // タップで表裏切替
+      card.addEventListener('click', () => {
+        flipped = !flipped;
+        if (flipped) {
+          card.classList.add('flipped');
+        } else {
+          card.classList.remove('flipped');
+        }
+      });
+
+      return card;
+    }
+
+    // カード表示更新
+    function showCard(index) {
+      const container = document.getElementById('card-container');
+      container.innerHTML = '';
+      flipped = false;
+
+      if (index < 0) index = cardsData.length - 1;
+      if (index >= cardsData.length) index = 0;
+      currentIndex = index;
+
+      const card = createCard(cardsData[currentIndex], currentIndex);
+      container.appendChild(card);
+    }
+
+    // スワイプ検出（超シンプル）
+    let startX = 0;
+    let isTouching = false;
+    const container = document.getElementById('card-container');
+
+    container.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      isTouching = true;
+    });
+    container.addEventListener('touchmove', (e) => {
+      if (!isTouching) return;
+      const currentX = e.touches[0].clientX;
+      const diffX = currentX - startX;
+
+      if (Math.abs(diffX) > 50) {
+        if (diffX > 0) {
+          // スワイプ右 → 前のカード
+          showCard(currentIndex - 1);
+        } else {
+          // スワイプ左 → 次のカード
+          showCard(currentIndex + 1);
+        }
+        isTouching = false;
+      }
+    });
+    container.addEventListener('touchend', () => {
+      isTouching = false;
+    });
+
+    // CSV読み込み
     Papa.parse(csvUrl, {
       download: true,
-      header: true, // ヘッダーをキーにする
+      header: true,
       complete: function(results) {
-        const data = results.data;
-        const container = document.getElementById('card-container');
-        container.innerHTML = ''; // クリア
-
-        data.forEach((item, index) => {
-          // 表の内容を作る例
-          const cardFront = document.createElement('div');
-          cardFront.className = 'card-front';
-          cardFront.textContent = item.word;
-
-          // 裏の内容
-          const cardBack = document.createElement('div');
-          cardBack.className = 'card-back';
-          cardBack.textContent = item.meaning;
-
-          // カードの全体を包むdiv
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.appendChild(cardFront);
-          card.appendChild(cardBack);
-
-          // タップ（クリック）で表裏切り替え
-          card.addEventListener('click', () => {
-            card.classList.toggle('flipped');
-          });
-
-          container.appendChild(card);
-        });
+        cardsData = results.data.filter(d => d.word); // word空欄は除く
+        showCard(0);
       }
     });
   </script>
