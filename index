@@ -1,48 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flashcard App</title>
+  <title>単語カード</title>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background-color: #f0f0f0;
-    }
-    .card {
-      width: 300px;
-      height: 200px;
-      margin: 100px auto;
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
+    /* ここにCSSを書く */
   </style>
 </head>
 <body>
-  <div class="card" onclick="flipCard()">
-    <div id="card-content">Word</div>
-  </div>
+  <!-- ここにHTML構造を書く -->
+  <div id="card-container"></div>
 
+
+
+  <!-- ここにJavaScriptコードを書く -->
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const word = "apple";
-    const meaning = "りんご";
-    let showingFront = true;
+   <div id="card-container"></div>
 
-    function flipCard() {
-      const content = document.getElementById("card-content");
-      if (showingFront) {
-        content.textContent = meaning;
-      } else {
-        content.textContent = word;
-      }
-      showingFront = !showingFront;
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+  const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2VWN6QtWFSjmqftBs9PLXPsE4lNQ5fhfJZ5uhQkxUIj0ICZsY6UAdU1pMqJ8vHD7mROyt3YJ8JkxF/pub?gid=0&single=true&output=csv';
+
+  // PapaParseでCSVをfetch＆パース
+  Papa.parse(csvUrl, {
+    download: true,
+    header: true, // ヘッダーをキーにする
+    complete: function(results) {
+      const data = results.data;
+      console.log(data); // 配列として取得できてるか確認
+
+      const container = document.getElementById('card-container');
+      container.innerHTML = ''; // クリア
+
+      data.forEach((item, index) => {
+        // 表の内容を作る例
+        const cardFront = document.createElement('div');
+        cardFront.className = 'card-front';
+        cardFront.textContent = item.word;
+
+        // 裏の内容
+        const cardBack = document.createElement('div');
+        cardBack.className = 'card-back';
+        cardBack.textContent = item.meaning;
+
+        // カードの全体を包むdiv
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.appendChild(cardFront);
+        card.appendChild(cardBack);
+
+        container.appendChild(card);
+      });
     }
+  });
+</script>
+
+<style>
+  .card { 
+    border: 1px solid #ccc; 
+    padding: 20px; 
+    margin-bottom: 10px; 
+  }
+  .card-front {
+    font-weight: bold;
+  }
+  .card-back {
+    color: #555;
+  }
+</style>
   </script>
 </body>
 </html>
