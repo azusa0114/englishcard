@@ -13,7 +13,7 @@
     #card-container {
       position: relative;
       width: 100%;
-      height: 250px;
+      height: 550px;
       border: 1px solid #ccc;
       border-radius: 8px;
       overflow: hidden;
@@ -23,7 +23,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      padding: 20px;
+      padding: 40px;
       box-sizing: border-box;
       background: white;
       border-radius: 8px;
@@ -100,13 +100,19 @@
         <h2>${data.word}</h2>
         <p>${data.phonetic}</p>
         <audio class="pronunciation-audio" controls src="${data.pronounciation}"></audio>
+        <p>[example]</p>
         <p><i>${data.example}</i></p>
       `;
 
       // 裏面
       const back = document.createElement('div');
       back.className = 'card-back';
-      back.innerHTML = `<p>${data.meaning}</p>`;
+      back.innerHTML = `
+      <p>${data.meaning}</p>
+      <p>[synonymous]</p>
+      <p><i>${data.synonymous}</i></p>
+      `;
+      
 
       // チェックボックス
       const checkboxContainer = document.createElement('div');
