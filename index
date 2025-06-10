@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flashcard App</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+    .card {
+      width: 300px;
+      height: 200px;
+      margin: 100px auto;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" onclick="flipCard()">
+    <div id="card-content">Word</div>
+  </div>
+
+  <script>
+    const word = "apple";
+    const meaning = "りんご";
+    let showingFront = true;
+
+    function flipCard() {
+      const content = document.getElementById("card-content");
+      if (showingFront) {
+        content.textContent = meaning;
+      } else {
+        content.textContent = word;
+      }
+      showingFront = !showingFront;
+    }
+  </script>
+</body>
+</html>
