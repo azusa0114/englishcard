@@ -559,14 +559,24 @@ if(item.pronunciation) {
   exampleElem.className = 'example';
   exampleElem.textContent = item.example;
   front.appendChild(exampleElem);
+  
+// back内容
+back.appendChild(checkboxBack);
+back.appendChild(imgBtnBack);
 
-  // back内容
-  back.appendChild(checkboxBack);
-  back.appendChild(imgBtnBack);
+// 意味
+const meaningElem = document.createElement('div');
+meaningElem.className = 'meaning'; // ★追加
+meaningElem.textContent = item.meaning;
+back.appendChild(meaningElem);
 
-  const meaningElem = document.createElement('div');
-  meaningElem.textContent = item.meaning;
-  back.appendChild(meaningElem);
+// 同義語（あれば）
+if(item.synonymous) {
+  const synonymous = document.createElement('div');
+  synonymous.className = 'synonymous'; // ★追加
+  synonymous.textContent = `Synonyms: ${item.synonymous}`;
+  back.appendChild(synonymous);
+}
 
   card.appendChild(front);
   card.appendChild(back);
