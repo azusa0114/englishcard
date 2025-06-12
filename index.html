@@ -21,7 +21,7 @@
   
   #card-container {
     position: relative;
-    display: block
+    display: block;
     width: 400px;
     height: 400px;
     box-sizing: border-box; /* 余白もサイズ内に含める指定（あれば安心） */
@@ -81,6 +81,7 @@
 }
 .card-back {
   transform: rotateY(180deg); /* ← ここに移す */
+  z-index: 1;
 }
   
 .card-back > div:not(.top-left):not(.top-right) {
@@ -120,6 +121,9 @@
     margin-top: 10px;
     font-style: italic;
     color: #333;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 90%;
   }
 
   /* スワイプ用ヒント */
@@ -535,6 +539,7 @@ function createCard(item) {
   audioDiv.appendChild(audio);
   front.appendChild(audioDiv);
 }
+  
   const exampleElem = document.createElement('div');
   exampleElem.className = 'example';
   exampleElem.textContent = item.example;
