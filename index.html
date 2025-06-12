@@ -54,13 +54,13 @@
 }
 
 .card-front > div:not(.top-left):not(.top-right) {
-  padding-left: 40px; /* チェックボックスが被らないくらいの余白 */
+  padding-left: 40px;
+  padding-top: 30px; /* 追加でテキストをチェックボックスの下に下げる */
 }
 
-.card-back {
-  transform: rotateY(180deg);
-  z-index: 1;
-  background-color: #f9f9f9; /* 薄グレーなどにして違いを強調 */
+.card-back > div:not(.top-left):not(.top-right) {
+  padding-left: 40px;
+  padding-top: 30px; /* 裏面も同じく */
 }
   
   /* チェックボックス・画像ボタン位置 */
