@@ -54,11 +54,14 @@
 }
 
 .card-front > div:not(.top-left):not(.top-right) {
+  z-index: 2;
   padding-left: 40px;
   padding-top: 30px; /* 追加でテキストをチェックボックスの下に下げる */
 }
 
 .card-back > div:not(.top-left):not(.top-right) {
+  z-index: 1;
+  transform: rotateY(180deg);
   padding-left: 40px;
   padding-top: 30px; /* 裏面も同じく */
 }
