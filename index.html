@@ -5,11 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>単語カード</title>
 <style>
+  html, body {
+  height: 100%;
+  margin: 0;
+}
   body {
     font-family: Arial, sans-serif;
     margin: 20px;
     background: #f0f0f0;
+    display: flex;
+    justify-content: center; /* 横中央 */
+    align-items: center;    /* 縦中央 */
+    height: 100vh;          /* 画面高さを確保 */
+    background: #f0f0f0;
   }
+  
   #card-container {
     position: relative;
     width: 400px;
@@ -60,7 +70,7 @@
 }
 
 .card-back > div:not(.top-left):not(.top-right) {
-  z-index: 1;
+  z-index: 0;
   transform: rotateY(180deg);
   padding-left: 40px;
   padding-top: 30px; /* 裏面も同じく */
@@ -192,8 +202,20 @@ function createCard(item) {
 
   // 発音オーディオリンク
   if(item.pronunciation) {
-    const audioDiv = document.createElement('div');
-    audioDiv.className = 'pronunciation';
+  const audioDiv = document.createElement('div');
+  audioDiv.className = 'pronunciation';
+
+  const audio = document.createElement('audio');
+  audio.controls = true;
+  audio.src = item.pronounciation;
+
+    // ここでクリックイベントの伝播を止める
+    audio.addEventListener('click', e => {
+    e.stopPropagation(); // これでaudioクリック時にカードの裏返りが防止される
+    });
+
+    audioDiv.appendChild(audio);
+    front.appendChild(audioDiv);
 
     // 発音ファイルのURLをaudioタグで埋める
     const audio = document.createElement('audio');
