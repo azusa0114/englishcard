@@ -201,31 +201,21 @@ function createCard(item) {
   front.appendChild(phoneticElem);
 
   // 発音オーディオリンク
-  if(item.pronunciation) {
+ if(item.pronunciation) {
   const audioDiv = document.createElement('div');
   audioDiv.className = 'pronunciation';
 
   const audio = document.createElement('audio');
   audio.controls = true;
-  audio.src = item.pronounciation;
+  audio.src = item.pronunciation;
 
-    // ここでクリックイベントの伝播を止める
-    audio.addEventListener('click', e => {
-    e.stopPropagation(); // これでaudioクリック時にカードの裏返りが防止される
-    });
+  audio.addEventListener('click', e => {
+    e.stopPropagation();
+  });
 
-    audioDiv.appendChild(audio);
-    front.appendChild(audioDiv);
-
-    // 発音ファイルのURLをaudioタグで埋める
-    const audio = document.createElement('audio');
-    audio.controls = true;
-    audio.src = item.pronounciation;
-    audioDiv.appendChild(audio);
-
-    front.appendChild(audioDiv);
-  }
-
+  audioDiv.appendChild(audio);
+  front.appendChild(audioDiv);
+}
   const exampleElem = document.createElement('div');
   exampleElem.className = 'example';
   exampleElem.textContent = item.example;
@@ -279,12 +269,10 @@ container.addEventListener('touchstart', e => {
 container.addEventListener('touchend', e => {
   endX = e.changedTouches[0].clientX;
   if(endX - startX > 50) {
-    // 右スワイプ → 前のカード
-    showCard(currentIndex - 1);
-  } else if(startX - endX > 50) {
-    // 左スワイプ → 次のカード
-    showCard(currentIndex + 1);
-  }
+  showCard(currentIndex - 1); // 右スワイプ → 前のカード
+} else if(startX - endX > 50) {
+  showCard(currentIndex + 1); // 左スワイプ → 次のカード
+}
 });
 
 // キーボード矢印キーでも操作できるように
@@ -301,8 +289,8 @@ Papa.parse(csvUrl, {
   download: true,
   header: true,
   complete: function(results) {
-    cardsData = results.data.filter(item => item.word); // 空行除去
-    showCard(0);
+    cardsData = results.data.filter(row => row.word); // 空行除外
+    showCard(0); // 最初のカード表示
   }
 });
   Papa.parse(csvUrl, {
@@ -311,6 +299,302 @@ Papa.parse(csvUrl, {
   complete: function(results) {
     cardsData = results.data;
     showCard(0); // 最初のカードを表示
+  }
+});
+  document.addEventListener('keydown', e => {
+  <!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>単語カード</title>
+<style>
+  html, body {
+  height: 100%;
+  margin: 0;
+}
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center; /* 横中央 */
+    align-items: center;    /* 縦中央 */
+    height: 100vh;          /* 画面高さを確保 */
+    background: #f0f0f0;
+  }
+  
+  #card-container {
+    position: relative;
+    width: 400px;
+    height: 220px;
+    padding: 20px;
+    box-sizing: border-box; /* 余白もサイズ内に含める指定（あれば安心） */
+    margin: auto;
+    perspective: 1000px;
+  }
+ .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 40px;
+  padding-bottom: 20px;
+  position: relative;
+  height: 400px;
+  max-height: 90vh;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background-color: #fff;
+  box-sizing: border-box;
+  position: relative; /* ← 追加で安全 */
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+}
+
+.card-front > div:not(.top-left):not(.top-right) {
+  z-index: 2;
+  padding-left: 40px;
+  padding-top: 30px; /* 追加でテキストをチェックボックスの下に下げる */
+}
+
+.card-back > div:not(.top-left):not(.top-right) {
+  z-index: 0;
+  transform: rotateY(180deg);
+  padding-left: 40px;
+  padding-top: 30px; /* 裏面も同じく */
+}
+  
+  /* チェックボックス・画像ボタン位置 */
+  .top-left {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+  }
+  .top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  /* テキスト部分 */
+  .word {
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-bottom: 8px;
+  }
+  .phonetic {
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .pronunciation audio {
+    vertical-align: middle;
+    width: 100px;
+  }
+  .example {
+    margin-top: 15px;
+    font-style: italic;
+    color: #333;
+  }
+
+  /* スワイプ用ヒント */
+  #swipe-hint {
+    text-align: center;
+    margin-top: 10px;
+    color: #777;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+  <div id="card-container"></div>  <!-- ここにJSがカード入れる -->
+  <div id="swipe-hint">← スワイプで前へ・次へ →</div>
+  
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2VWN6QtWFSjmqftBs9PLXPsE4lNQ5fhfJZ5uhQkxUIj0ICZsY6UAdU1pMqJ8vHD7mROyt3YJ8JkxF/pub?gid=0&single=true&output=csv';
+
+let cardsData = [];
+let currentIndex = 0;
+let flipped = false;
+
+// localStorageで学習済み保存を管理
+const remembered = JSON.parse(localStorage.getItem('rememberedWords') || '{}');
+
+function saveRemembered(word, state) {
+  remembered[word] = state;
+  localStorage.setItem('rememberedWords', JSON.stringify(remembered));
+}
+
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  // 表と裏
+  const front = document.createElement('div');
+  front.className = 'card-front';
+  const back = document.createElement('div');
+  back.className = 'card-back';
+
+  // チェックボックス（左上）
+  const checkboxFront = document.createElement('input');
+  checkboxFront.type = 'checkbox';
+  checkboxFront.className = 'top-left';
+  checkboxFront.checked = remembered[item.word] || false;
+  checkboxFront.title = '学習済みにチェック';
+
+  const checkboxBack = checkboxFront.cloneNode();
+  checkboxBack.className = 'top-left';
+
+  checkboxFront.addEventListener('change', () => {
+    checkboxBack.checked = checkboxFront.checked;
+    saveRemembered(item.word, checkboxFront.checked);
+  });
+  checkboxBack.addEventListener('change', () => {
+    checkboxFront.checked = checkboxBack.checked;
+    saveRemembered(item.word, checkboxBack.checked);
+  });
+
+  // 画像ボタン（右上）
+  const imgBtnFront = document.createElement('button');
+  imgBtnFront.className = 'top-right';
+  imgBtnFront.textContent = 'check image';
+  imgBtnFront.title = 'check image';
+  imgBtnFront.style.cursor = 'pointer';
+
+  const imgBtnBack = imgBtnFront.cloneNode(true);
+  imgBtnBack.className = 'top-right';
+
+  imgBtnFront.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if(item.image) window.open(item.image, '_blank');
+  });
+  imgBtnBack.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if(item.image) window.open(item.image, '_blank');
+  });
+
+  // front内容
+  front.appendChild(checkboxFront);
+  front.appendChild(imgBtnFront);
+
+  const wordElem = document.createElement('div');
+  wordElem.className = 'word';
+  wordElem.textContent = item.word;
+  front.appendChild(wordElem);
+
+  const phoneticElem = document.createElement('div');
+  phoneticElem.className = 'phonetic';
+  phoneticElem.textContent = item.phonetic;
+  front.appendChild(phoneticElem);
+
+  // 発音オーディオリンク
+ if(item.pronunciation) {
+  const audioDiv = document.createElement('div');
+  audioDiv.className = 'pronunciation';
+
+  const audio = document.createElement('audio');
+  audio.controls = true;
+  audio.src = item.pronunciation;
+
+  audio.addEventListener('click', e => {
+    e.stopPropagation();
+  });
+
+  audioDiv.appendChild(audio);
+  front.appendChild(audioDiv);
+}
+  const exampleElem = document.createElement('div');
+  exampleElem.className = 'example';
+  exampleElem.textContent = item.example;
+  front.appendChild(exampleElem);
+
+  // back内容
+  back.appendChild(checkboxBack);
+  back.appendChild(imgBtnBack);
+
+  const meaningElem = document.createElement('div');
+  meaningElem.textContent = item.meaning;
+  back.appendChild(meaningElem);
+
+  card.appendChild(front);
+  card.appendChild(back);
+
+  // タップで表裏切り替え
+  card.addEventListener('click', () => {
+    flipped = !flipped;
+    if(flipped) {
+      card.classList.add('flipped');
+    } else {
+      card.classList.remove('flipped');
+    }
+  });
+
+  return card;
+}
+
+function showCard(index) {
+  const container = document.getElementById('card-container');
+  container.innerHTML = '';
+  flipped = false;
+
+  if(index < 0) index = cardsData.length - 1;
+  if(index >= cardsData.length) index = 0;
+  currentIndex = index;
+
+  const card = createCard(cardsData[index]);
+  container.appendChild(card);
+}
+
+// スワイプ処理 (スマホ向け)
+let startX = 0;
+let endX = 0;
+
+const container = document.getElementById('card-container');
+container.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+});
+container.addEventListener('touchend', e => {
+  endX = e.changedTouches[0].clientX;
+  if(endX - startX > 50) {
+  showCard(currentIndex - 1); // 右スワイプ → 前のカード
+} else if(startX - endX > 50) {
+  showCard(currentIndex + 1); // 左スワイプ → 次のカード
+}
+});
+
+// キーボード矢印キーでも操作できるように
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight') {
+    showCard(currentIndex + 1);
+  } else if(e.key === 'ArrowLeft') {
+    showCard(currentIndex - 1);
+  }
+});
+
+// CSV読み込み
+Papa.parse(csvUrl, {
+  download: true,
+  header: true,
+  complete: function(results) {
+    cardsData = results.data.filter(row => row.word); // 空行除外
+    showCard(0); // 最初のカード表示
   }
 });
   document.addEventListener('keydown', e => {
