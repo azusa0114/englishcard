@@ -15,6 +15,7 @@
     width: 320px;
     height: 220px;
     padding: 20px;
+    box-sizing: border-box; /* 余白もサイズ内に含める指定（あれば安心） */
     margin: auto;
     perspective: 1000px;
   }
@@ -52,9 +53,8 @@
   box-sizing: border-box;
 }
 
-.card-front {
-  transform: rotateY(0deg);
-  z-index: 2; /* 表面が前面に出るように */
+.card-front > div:not(.top-left):not(.top-right) {
+  padding-left: 40px; /* チェックボックスが被らないくらいの余白 */
 }
 
 .card-back {
