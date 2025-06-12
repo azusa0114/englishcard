@@ -251,6 +251,13 @@ function createCard(item) {
   card.appendChild(front);
   card.appendChild(back);
 
+  if(item.synonymous) {
+  const synonymous = document.createElement('div');
+  synonymous.className = 'synonymous';
+  synonymous.textContent = `Synonyms: ${item.synonymous}`;
+  back.appendChild(synonymous);
+}
+
   // タップで表裏切り替え
   card.addEventListener('click', () => {
     flipped = !flipped;
