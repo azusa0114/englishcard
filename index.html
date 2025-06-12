@@ -28,6 +28,9 @@
     box-sizing: border-box; /* 余白もサイズ内に含める指定（あれば安心） */
     margin: auto;
     perspective: 1000px;
+    flex-direction: column; /* ← これで縦並びにする */
+  align-items: center;
+  gap: 16px; /* 適宜間隔調整 */
   }
  .card {
   display: flex;
@@ -52,6 +55,14 @@
   transform: rotateY(180deg);
 }
 
+  .card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+  
 .card-front, .card-back {
   position: absolute;
   width: 100%;
@@ -68,12 +79,15 @@
   padding-left: 40px;
   padding-top: 30px; /* 追加でテキストをチェックボックスの下に下げる */
 }
-
+.card-back {
+  transform: rotateY(180deg); /* ← ここに移す */
+}
+  
 .card-back > div:not(.top-left):not(.top-right) {
   z-index: 0;
-  transform: rotateY(180deg);
   padding-left: 40px;
-  padding-top: 30px; /* 裏面も同じく */
+  padding-top: 30px;
+  /* transform: rotateY(180deg); ← これは削除 */
 }
   
   /* チェックボックス・画像ボタン位置 */
