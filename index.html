@@ -60,6 +60,7 @@
   transform-style: preserve-3d;
   transition: transform 0.6s;
   gap: 15px; /* 適宜間隔調整 */
+  align-items: center 
 }
   
 .card-front, .card-back {
@@ -88,7 +89,6 @@
   
 .card-back > div:not(.top-left):not(.top-right) {
   z-index: 0;
-  align-items: center 
   /* transform: rotateY(180deg); ← これは削除 */
 }
   
