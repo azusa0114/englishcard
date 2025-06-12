@@ -524,18 +524,26 @@ function createCard(item) {
   front.appendChild(phoneticElem);
 
   // 発音オーディオリンク
- if(item.pronunciation) {
+if(item.pronunciation) {
   const audioDiv = document.createElement('div');
   audioDiv.className = 'pronunciation';
 
   const audio = document.createElement('audio');
-  audio.controls = true;
   audio.src = item.pronunciation;
 
-  audio.addEventListener('click', e => {
+  // 絵文字の再生ボタン
+  const playEmoji = document.createElement('span');
+  playEmoji.textContent = '🔊'; // ▶️ や 🔈 に変更してもOK
+  playEmoji.style.cursor = 'pointer';
+  playEmoji.style.fontSize = '24px';
+  playEmoji.style.marginLeft = '5px';
+
+  playEmoji.addEventListener('click', (e) => {
     e.stopPropagation();
+    audio.play();
   });
 
+  audioDiv.appendChild(playEmoji);
   audioDiv.appendChild(audio);
   front.appendChild(audioDiv);
 }
