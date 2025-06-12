@@ -26,6 +26,7 @@
   padding-bottom: 20px;
   position: relative;
   height: 400px;
+  max-height: 90vh;
   border: 1px solid #ccc;
   border-radius: 12px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -59,7 +60,7 @@
 .card-back {
   transform: rotateY(180deg);
   z-index: 1;
-  background-color: #f9f9f9; /* 薄グレーなどにして違いを強調
+  background-color: #f9f9f9; /* 薄グレーなどにして違いを強調 */
 }
   
   /* チェックボックス・画像ボタン位置 */
@@ -116,6 +117,8 @@
       <audio controls src="https://example.com/audio.mp3"></audio>
     </div>
     <div class="example">This is an example sentence.</div>
+    <div id="card-container"></div>
+<div id="swipe-hint">← スワイプで前へ・次へ →</div>
   </div>
 
   <!-- 裏面 -->
@@ -295,6 +298,24 @@ Papa.parse(csvUrl, {
   complete: function(results) {
     cardsData = results.data.filter(item => item.word); // 空行除去
     showCard(0);
+  }
+});
+  Papa.parse(csvUrl, {
+  download: true,
+  header: true,
+  complete: function(results) {
+    cardsData = results.data;
+    showCard(0); // 最初のカードを表示
+  }
+});
+  document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') {
+    showCard(currentIndex - 1);
+  } else if (e.key === 'ArrowRight') {
+    showCard(currentIndex + 1);
+  } else if (e.key === ' ') {
+    // スペースキーで表裏反転
+    document.querySelector('.card').click();
   }
 });
 </script>
