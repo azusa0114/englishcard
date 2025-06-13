@@ -18,7 +18,7 @@
     position: relative;
     display: block;
     width: 90%;
-    height: 80%;
+    height: 70%;
     box-sizing: border-box; /* 余白もサイズ内に含める指定（あれば安心） */
     margin: auto;
     perspective: 1000px;
@@ -123,15 +123,18 @@
   .meaning {
   max-width: 80%;
   color: #555;
-  margin-top: 100px;
-  margin-bottom: 6px;
+  margin: 100px auto 6px auto; /* ← 中央寄せ */
+  text-align: left;            /* ← テキストは左揃え */
+  word-wrap: break-word;
   }
   
   .synonymous {
   max-width: 80%;
-  margin-top: 50px;
+  margin: 50px auto 6px auto;  /* ← 中央寄せ */
   font-style: italic;
   color: #333;
+  text-align: left;            /* ← 忘れずに追加！ */
+  word-wrap: break-word;
   }
 
   /* スワイプ用ヒント */
