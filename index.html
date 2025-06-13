@@ -86,7 +86,6 @@
   
 .card-back > div:not(.top-left):not(.top-right) {
   z-index: 0;
-  margin: 10px 0 0 60px;       /* 中央に寄せる（80%にしても中央寄せしないと偏る） */
   max-width: 80%;        /* 最大幅80% */
   text-align: left;      /* 左揃え */
   word-wrap: break-word; /* 折り返し */
@@ -126,13 +125,14 @@
   }
 
   .meaning {
-  width: 80%;
+  max-width: 80%;
   color: #555;
   margin-top: 100px;
   margin-bottom: 6px;
   }
   
   .synonymous {
+  max-width: 80%;
   margin-top: 50px;
   font-style: italic;
   color: #333;
