@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語学習ガイド</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;min-height:100vh}
+/* Top nav */
+.topnav{position:sticky;top:0;z-index:100;background:#1A1A18;display:flex;gap:2px;padding:6px 16px}
+.tnbtn{font-family:inherit;font-size:12px;font-weight:500;padding:6px 16px;border-radius:99px;border:none;cursor:pointer;color:#73726C;background:transparent;transition:all .15s}
+.tnbtn.on{background:#F5F4EF;color:#1A1A18}
+/* Page */
+.page{display:none;padding:16px;max-width:900px;margin:0 auto}
+.page.on{display:block}
+/* Cards */
+.card{background:#fff;border-radius:12px;border:0.5px solid #D9D6CF;padding:14px 16px;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:600;color:#1A1A18;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+/* Method tabs */
+.mtabs{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:14px}
+.mtb{font-family:inherit;font-size:10px;padding:4px 11px;border-radius:99px;border:1px solid #D9D6CF;background:#F1EFE8;color:#73726C;cursor:pointer;transition:all .15s}
+.mtb.on{background:#3C3489;color:#fff;border-color:#3C3489;font-weight:500}
+.mtc{display:none}.mtc.on{display:block}
+/* Pills */
+.pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
+.pill{font-size:10px;padding:2px 9px;border-radius:99px;font-weight:500}
+.pg{background:#E1F5EE;color:#085041}.pt{background:#EEEDFE;color:#3C3489}.pm{background:#FFF0CC;color:#5C3D00}
+/* Steps */
+.step{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.sn{width:21px;min-width:21px;height:21px;border-radius:50%;background:#EEEDFE;color:#3C3489;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.sn0{background:#F1EFE8;color:#73726C;font-size:9px}
+.sa{font-size:11px;font-weight:500;color:#1A1A18}
+.sd{font-size:10px;color:#73726C;line-height:1.65;margin-top:2px}
+.sdv span{display:block;font-size:10px;color:#73726C;line-height:1.8;padding-left:2px}
+.badge{font-size:8px;padding:1px 5px;border-radius:99px;font-weight:500;margin-left:3px;vertical-align:middle;display:inline-block}
+.bo{background:#E1F5EE;color:#085041}.bp{background:#FFF0CC;color:#5C3D00}
+/* Boxes */
+.trap{background:#FAECE7;border-radius:8px;padding:8px 10px;font-size:10px;color:#1A1A18;line-height:1.65;margin-top:8px}
+.trap b{color:#712B13}
+.nxt{background:#D6F5EB;border-radius:8px;padding:8px 10px;font-size:10px;color:#1A1A18;line-height:1.65;margin-top:5px}
+.nxt b{color:#085041}
+.info{background:#F1EFE8;border-radius:8px;padding:7px 10px;font-size:10px;color:#73726C;line-height:1.55;margin-bottom:9px}
+.warn{background:#FAECE7;border-radius:8px;padding:7px 10px;font-size:10px;color:#712B13;margin-top:8px}
+.sub{font-size:10px;font-weight:600;color:#73726C;text-transform:uppercase;letter-spacing:.05em;margin:13px 0 8px;padding-bottom:3px;border-bottom:1px solid #E8E5DF}
+.sc{font-style:italic;color:#73726C}
+/* Schedule */
+.ratio-card{background:#fff;border-radius:12px;border:0.5px solid #D9D6CF;padding:14px 16px;margin-bottom:12px}
+.ratio-title{font-size:12px;font-weight:600;margin-bottom:9px}
+.rrow{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.rl{font-size:10px;color:#73726C;width:80px;flex-shrink:0}
+.rw{flex:1}
+.bar{display:flex;height:20px;border-radius:5px;overflow:hidden;width:100%}
+.seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500}
+.sb{background:#FAC775;color:#412402}.se{background:#AFA9EC;color:#26215C}.sm{background:#5DCAA5;color:#04342C}
+.rnote{font-size:10px;color:#73726C;margin-top:6px;line-height:1.6}
+.legend{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:3px;font-size:10px;color:#73726C}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.cal-wrap{overflow-x:auto}
+.grid{display:grid;grid-template-columns:28px repeat(7,1fr);grid-template-rows:auto 120px 80px 160px 120px;gap:2px;min-width:520px}
+.dh{font-size:11px;font-weight:500;text-align:center;padding:3px 2px;border-radius:5px;line-height:1.3;color:#1A1A18}
+.dh-h{background:#FFF0CC;color:#5C3D00}
+.ds{font-size:8px;font-weight:400;opacity:.8}
+.tl{font-size:8px;color:#73726C;text-align:right;padding-right:3px;display:flex;flex-direction:column;justify-content:space-between;padding-top:2px;padding-bottom:2px}
+.slot{border-radius:5px;padding:2px;display:flex;flex-direction:column;gap:2px;overflow:hidden;background:#F1EFE8}
+.se2{background:transparent}
+.blk{border-radius:3px;padding:2px 5px;font-size:9px;line-height:1.3;font-weight:500;flex-shrink:0}
+.bs{font-size:8px;font-weight:400;opacity:.75;margin-top:1px}
+.c-esl{background:#DDDAF8;color:#2A2478}.c-ws{background:#FFF0CC;color:#5C3D00}
+.c-onsa{background:#D0F0E8;color:#065045}.c-yari{background:#FDEBD6;color:#6B2D00}
+.c-ear{background:#E3E1FB;color:#3C3489}.c-lite{background:#F1EFE8;color:#73726C}
+.c-sch{background:transparent;border:1px dashed #B0ADB8;color:#73726C;font-style:italic;font-weight:400}
+/* Knowledge cards */
+.krow{display:flex;gap:8px;margin-bottom:6px;font-size:11px;align-items:flex-start}
+.klabel{font-weight:500;color:#1A1A18;min-width:84px;flex-shrink:0;padding-top:1px}
+.kval{color:#73726C;line-height:1.65}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:99px;margin:1px 2px}
+.tg{background:#E1F5EE;color:#085041}.ta{background:#FFF0CC;color:#5C3D00}
+.tb2{background:#EEEDFE;color:#3C3489}.tr{background:#FAECE7;color:#712B13}
+.hr{border:none;border-top:1px solid #E8E5DF;margin:8px 0}
+.phase-row{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.circle.now{outline:2px solid #3C3489;outline-offset:2px}
+.arrow{font-size:16px;color:#B0ADB8}
+/* Ref table */
+.reftable{width:100%;border-collapse:collapse;font-size:11px}
+.reftable td{padding:5px 7px;border-bottom:1px solid #E8E5DF;color:#73726C}
+.reftable td:first-child{font-weight:500;color:#1A1A18;width:44%}
+.reftable a{color:#3C3489}
+.mcheck{background:#F1EFE8;border-radius:8px;padding:8px 10px;font-size:10px;color:#73726C;line-height:1.8;margin-top:8px}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <button class="tnbtn on" onclick="showPage(this,'methods')">📖 勉強法</button>
+  <button class="tnbtn" onclick="showPage(this,'schedule')">📅 スケジュール</button>
+  <button class="tnbtn" onclick="showPage(this,'knowledge')">💡 基礎知識</button>
+</nav>
+
+<!-- ========== PAGE 1: 勉強法 ========== -->
+<div class="page on" id="methods">
+  <div class="mtabs">
+    <button class="mtb on" onclick="showTab(this,'ws')">WS</button>
+    <button class="mtb" onclick="showTab(this,'wsrev')">WS復習</button>
+    <button class="mtb" onclick="showTab(this,'onsei')">発音添削</button>
+    <button class="mtb" onclick="showTab(this,'yari')">やり直し</button>
+    <button class="mtb" onclick="showTab(this,'listen')">短文L</button>
+    <button class="mtb" onclick="showTab(this,'cambly')">Cambly</button>
+    <button class="mtb" onclick="showTab(this,'ref')">参照</button>
+  </div>
+
+  <!-- WS -->
+  <div class="mtc on" id="ws">
+    <div class="card">
+      <div class="card-title">📖 ワークシート（本体）</div>
+      <div class="pills">
+        <span class="pill pg">🚀 前回記録のページを開く</span>
+        <span class="pill pt">⏱ セッション開始時に25分セット</span>
+        <span class="pill pm">📅 ページ番号：📍メモ参照</span>
+      </div>
+      <div class="info">品詞マップと照合：今日の内容がハイライト項目なら攻略モードを上げる</div>
+      <div class="step"><div class="sn sn0">準</div><div><div class="sa">今日のゴールを決める</div><div class="sd">「◯◯ページを声で満点まで」と具体的に決める</div></div></div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">動画視聴 <span class="badge bo">OSH</span></div><div class="sd">動画を見る。例文が出たら声に出す。わからない箇所は⚡マーク（すぐ調べない）</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">音声確認＆オーバーラッピング <span class="badge bo">OSH</span></div><div class="sd">audioを流す → IPAを確認 → スクリプトを見ながら音声と同時に発声 → ネイティブスピードでリピート → 自分との違いを分析・メモ</div></div></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">テスト（2秒ルール）<span class="badge bp">提案</span></div><div class="sd">答えを隠してaudioなしでテスト。2秒以内に声で答えられるか確認。詰まったら×印</div></div></div>
+      <div class="step"><div class="sn">4</div><div><div class="sa">間違いの原因を特定 <span class="badge bo">OSH</span></div><div class="sdv">
+        <span>・知識不足 → パターン分析・品詞確認</span>
+        <span>・語彙不足 → ozdic.com＋AIで語根・派生語・10文（10分以内）</span>
+        <span>・例文不足 → AIで10文</span>
+        <span>・発音不足 → IPAを再チェック・リピート</span>
+      </div></div></div>
+      <div class="step"><div class="sn">5</div><div><div class="sa">声で満点になるまで繰り返す <span class="badge bo">OSH</span></div><div class="sd">満点になったら次のページへ。接触回数が目的。満点まで次のページに進まない。</div></div></div>
+      <div class="step"><div class="sn">6</div><div><div class="sa">能動語彙化 <span class="badge bo">OSH</span></div><div class="sd">新しいパターンはAIで日常文10個を作って定着。ニュアンスも確認。</div></div></div>
+      <div class="trap">⚠️ <b>トラップ</b><br>AI深掘りが目的に（10分以内で切り上げ）／「動画だけ」で終わる（テストまでやる）／完璧なメモ作りに時間を使う</div>
+      <div class="nxt">📍 <b>次回の準備（終わった直後に）</b><br>次回のページ番号を上書き → 現在のページ：___<br>⚡マークの疑問点は翌セッションで解決</div>
+    </div>
+  </div>
+
+  <!-- WS復習 -->
+  <div class="mtc" id="wsrev">
+    <div class="card">
+      <div class="card-title">🔄 WS復習（プレスクリプト法）</div>
+      <div class="pills">
+        <span class="pill pg">🚀 今週のaudioの再生ボタンを押す</span>
+        <span class="pill pt">⏱ 45分セット</span>
+        <span class="pill pm">📅 今週やったページ（毎週変わる）</span>
+      </div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">今週のページのaudioを流す</div><div class="sd">テキスト・答えを見ながらでOK。耳を慣らすことが目的。</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">違和感のある文・言えない文に印をつける</div><div class="sd">「わかるはずなのに出てこない」「聞き取れるのに言えない」に注目</div></div></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">印をつけた文を精読</div><div class="sd">なぜ言えなかったか言語化（文法？語順？発音？）</div></div></div>
+      <div class="step"><div class="sn">4</div><div><div class="sa">テンプレ・パターンをメモ <span class="badge bo">OSH</span></div><div class="sd">「この構文はこういう時に使う」という型で抜き出す</div></div></div>
+      <div class="step"><div class="sn">5</div><div><div class="sa">印をつけた文だけ音読 <span class="badge bo">OSH</span></div><div class="sd">IPA・リンキングを意識。自然なスピードで言えるまで繰り返す。</div></div></div>
+      <div class="trap">⚠️ <b>トラップ</b><br>全部やり直そうとしない（印をつけた文だけ）／新しいページに進まない（今週の復習のみ）</div>
+      <div class="nxt">📍 <b>次回の準備</b><br>次週持ち越す文があればメモ</div>
+    </div>
+  </div>
+
+  <!-- 発音添削 -->
+  <div class="mtc" id="onsei">
+    <div class="card">
+      <div class="card-title">🎙 発音添削</div>
+      <div class="info">💡 オーバーラッピングとして意識：スクリプトを見ながら手本音声と同時に発声。毎回1箇所に意識を絞る。<br>⚠️ 発音講座ビデオは練習前ではなく、フィードバックをもらった後に見る（OSH方針）</div>
+
+      <div class="sub">土締切（約30分）</div>
+      <div class="pills">
+        <span class="pill pg">🚀 手本音源の再生ボタンを押す</span>
+        <span class="pill pt">⏱ 30分セット</span>
+        <span class="pill pm">📅 その週の手本音源（毎週変わる）</span>
+      </div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">手本を聞く（全体）</div><div class="sd">気をつけるべき箇所を複数洗い出してメモ（IPA・リンキング・強調など）</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">1箇所ずつ完璧になるまでオーバーラッピング</div><div class="sd">1箇所を取り上げ → スクリプトを見ながら手本と同時に発声を繰り返す → 完璧になったら次の箇所へ</div></div></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">通しで録音 → 提出</div><div class="sd">全箇所終わったら最初から通して録音して提出する</div></div></div>
+
+      <div class="sub">月締切（約2時間10分）</div>
+      <div class="pills">
+        <span class="pill pg">🚀 手本音源の再生ボタンを押す</span>
+        <span class="pill pt">⏱ 練習1時間セット</span>
+        <span class="pill pm">📅 その週の手本音源（毎週変わる）</span>
+      </div>
+      <div class="info" style="margin-bottom:4px">土締切と同じ流れで練習1時間。終わったら提出。</div>
+      <div class="step"><div class="sn sn0">＋</div><div><div class="sa sc">流し聞（1時間）スケジュールのみ</div><div class="sd">他の人への添削を聞く。気になった指摘はメモ（自分にも当てはまるか確認）</div></div></div>
+
+      <div class="sub">水締切（約3時間）</div>
+      <div class="pills">
+        <span class="pill pg">🚀 手本音源の再生ボタンを押す</span>
+        <span class="pill pt">⏱ 練習2時間セット</span>
+        <span class="pill pm">📅 その週の手本音源（毎週変わる）</span>
+      </div>
+      <div class="step"><div class="sn sn0">準</div><div><div class="sa">手本を確認（1分）</div><div class="sd">今週の課題を思い出す。今日のゴールを1つ決める。</div></div></div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">手本を聞く → 気をつけるべき箇所を洗い出す</div><div class="sd">複数の箇所をメモ（IPA・リンキング・強調・スピードなど）</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">1箇所ずつ完璧になるまでオーバーラッピング</div><div class="sd">1箇所を取り上げ → スクリプトを見ながら手本と同時に発声を繰り返す → 完璧になったら次の箇所へ（時間の許す限り）</div></div></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">通しで録音 → 提出</div><div class="sd">時間内に終わった箇所まで通しで録音して提出</div></div></div>
+      <div class="step"><div class="sn sn0">＋</div><div><div class="sa sc">流し聞（1時間）スケジュールのみ</div><div class="sd">他の人への添削を聞く。気になった指摘はメモ。</div></div></div>
+
+      <div class="trap">⚠️ <b>トラップ</b><br>全箇所を同時に直そうとしない。1箇所ずつ順番に完璧にする。</div>
+      <div class="nxt">📍 <b>次回の準備</b><br>今週気づいた発音の課題を1行メモ</div>
+    </div>
+  </div>
+
+  <!-- やり直し -->
+  <div class="mtc" id="yari">
+    <div class="card">
+      <div class="card-title">✏️ 発音添削 やり直し</div>
+      <div class="pills">
+        <span class="pill pg">🚀 フィードバック音声を再生する</span>
+        <span class="pill pt">⏱ 30分で強制終了</span>
+        <span class="pill pm">📅 受け取ったフィードバック音声（毎回変わる）</span>
+      </div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">フィードバックを聞く（全体を通して）</div><div class="sd">何が指摘されたかを把握する</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">「なんで？！」を言語化 <span class="badge bo">OSH</span></div><div class="sd">「なぜ自分はこう発音していたか」を仮説で持つ。これが記憶に残る。</div></div></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">発音講座の関連動画を見る <span class="badge bo">OSH</span></div><div class="sd">指摘された発音に関係する講座動画を確認。「添削後に活用」がOSH方針。</div></div></div>
+      <div class="step"><div class="sn">4</div><div><div class="sa">IPAで正しい音を確認</div><div class="sd">自分が出していた音との違いを視覚的に把握する</div></div></div>
+      <div class="step"><div class="sn">5</div><div><div class="sa">今日直す箇所を1つ決める → 完璧になるまでオーバーラッピング（20分）</div><div class="sd">その箇所だけに集中して繰り返す。改善版を録音する。</div></div></div>
+      <div class="step"><div class="sn">6</div><div><div class="sa">前の録音と聞き比べる <span class="badge bp">提案</span></div><div class="sd">「変わったか？」を自分の耳で確認。自己採点・自己修正の練習。</div></div></div>
+      <div class="trap">⚠️ <b>トラップ</b><br>今日直す箇所は1つに絞る。スコープを広げない。30分で強制終了。</div>
+      <div class="nxt">📍 <b>次回の準備</b><br>改善した点を1行メモ</div>
+    </div>
+  </div>
+
+  <!-- 短文L -->
+  <div class="mtc" id="listen">
+    <div class="card">
+      <div class="card-title">👂 短文リスニング</div>
+      <div class="pills">
+        <span class="pill pg">🚀 発音添削の手本音源をそのまま再生</span>
+        <span class="pill pt">⏱ 15分セット</span>
+        <span class="pill pm">📅 発音添削(水)の手本音源・1週間同じ素材（毎週変わる）</span>
+      </div>
+      <div class="info">💡 同じ素材を毎日繰り返すことで音が蓄積される。SLA：反復接触が音声知覚の自動化に必要。</div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">スクリプト・字幕ありで一度聞く</div><div class="sd">全体像をつかむ</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">スクリプトなしで聞く</div><div class="sd">聞き取れなかった箇所にメモ</div></div></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">聞き取れなかった箇所を字幕ONに戻して確認（知識化）</div><div class="sd">なぜ聞き取れなかったかを確認する</div></div></div>
+      <div class="step"><div class="sn">4</div><div><div class="sa">字幕OFFでその箇所だけもう一度聞く</div><div class="sd">「なぜ聞き取れなかったか」を1秒考える（音？速度？語彙？）。答えが出なくてもOK。</div></div></div>
+      <div class="trap">⚠️ <b>トラップ</b><br>全部聞き取ろうとしない（今日わからなくていい）／素材を変えたくなっても今週は同じものを続ける</div>
+      <div class="nxt">📍 <b>次回の準備</b><br>今日聞き取れなかった箇所を1つだけメモ（明日の出発点）</div>
+    </div>
+  </div>
+
+  <!-- Cambly -->
+  <div class="mtc" id="cambly">
+    <div class="card">
+      <div class="card-title">💬 Cambly＋振り返り</div>
+      <div class="sub" style="margin-top:0">前日夜（木曜）5分の準備</div>
+      <div class="pills">
+        <span class="pill pg">🚀 メモ帳を開く（それだけ）</span>
+        <span class="pill pt">⏱ 5分で切り上げる</span>
+        <span class="pill pm">📅 今週のWSのテンプレ or 前回出なかった・聞き取れなかった表現（毎週変わる）</span>
+      </div>
+      <div class="step"><div class="sn sn0">準</div><div><div class="sa">使いたい表現を2〜3個選んでメモに書く</div><div class="sd">「明日はこれを使う」と決める。当日は考えない。</div></div></div>
+
+      <div class="sub">Cambly本体（30分）</div>
+      <div class="pills">
+        <span class="pill pg">🚀 前日のメモを見てからCamblyを開く</span>
+        <span class="pill pt">⏱ Camblyのセッション設定が自動タイマー</span>
+      </div>
+      <div class="step"><div class="sn">1</div><div><div class="sa">準備した表現を意識的に使う</div><div class="sd">使えたらOK、使えなくてもOK（振り返りの素材になる）</div></div></div>
+      <div class="step"><div class="sn">2</div><div><div class="sa">出なかった表現・聞き取れなかった箇所の両方をメモ</div><div class="sd">話しながらで可。「言えなかった」「聞こえたが意味が取れなかった」どちらも記録する。</div></div></div>
+
+      <div class="sub">振り返り（15分）</div>
+      <div class="pills"><span class="pill pt">⏱ 15分で強制終了</span></div>
+      <div class="step"><div class="sn">3</div><div><div class="sa">録画を3〜5分見返す <span class="badge bo">OSH</span></div><div class="sd">「出なかった表現」「言い直した箇所」AND「聞き取れなかった箇所」に注目。全部見なくていい。</div></div></div>
+      <div class="step"><div class="sn">4</div><div><div class="sa">なぜ出なかったか・なぜ聞き取れなかったかを精読 <span class="badge bo">OSH</span></div><div class="sd">知識？語順？語彙？音？を言語化する</div></div></div>
+      <div class="step"><div class="sn">5</div><div><div class="sa">テンプレ化してメモ → 次回の準備リストへ <span class="badge bo">OSH</span></div><div class="sd">次の木曜夜に見るだけでOK（このステップで準備完了）</div></div></div>
+      <div class="step"><div class="sn">6</div><div><div class="sa">AIで10文（時間があれば） <span class="badge bo">OSH</span></div><div class="sd">テンプレを使った日常文をAIに10個作らせてニュアンスを確認</div></div></div>
+      <div class="trap">⚠️ <b>トラップ</b><br>振り返りで完璧な分析をしようとしない（15分で強制終了）／録画を全部見ようとしない（3〜5分でいい）</div>
+      <div class="nxt">📍 <b>次回の準備</b><br>ステップ5でメモ済み → 次の木曜夜に見るだけ</div>
+    </div>
+  </div>
+
+  <!-- 参照 -->
+  <div class="mtc" id="ref">
+    <div class="card">
+      <div class="card-title">🔗 参照ツール・逆引き</div>
+      <table class="reftable">
+        <tr><td>コロケーション確認</td><td><a href="https://ozdic.com" target="_blank">ozdic.com</a></td></tr>
+        <tr><td>語根・語源確認</td><td><a href="https://etymonline.com" target="_blank">etymonline.com</a></td></tr>
+        <tr><td>リーディングWPM計測</td><td><a href="https://www.sokunousokudoku.net/measuresan/" target="_blank">sokunousokudoku.net</a>（現在：127 → 目標130）</td></tr>
+        <tr><td>単語レベル確認</td><td><a href="https://urbanmeetup.tokyo/eitango/check" target="_blank">urbanmeetup.tokyo</a>（現在：中級 72点）</td></tr>
+      </table>
+      <div class="sub">月1回のチェック指標</div>
+      <div class="mcheck">
+        📊 リーディングWPM（現在127 → 目標130）<br>
+        🎙 スピーキングWPM：1分録音 → 文字起こし → AI判定<br>
+        👂 TOEIC Part 3・4を何割理解できたか<br>
+        📝 人に説明できる文法項目はいくつか
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 2: スケジュール ========== -->
+<div class="page" id="schedule">
+  <div class="ratio-card">
+    <div class="ratio-title">週の比率（計 〜30h）</div>
+    <div class="rrow">
+      <span class="rl">OSH推奨</span>
+      <div class="rw"><div class="bar">
+        <div class="seg sb" style="width:35%">🧠 35%</div>
+        <div class="seg se" style="width:40%">👂 40%</div>
+        <div class="seg sm" style="width:25%">👄 25%</div>
+      </div></div>
+    </div>
+    <div class="rrow">
+      <span class="rl">ESL期 実際</span>
+      <div class="rw"><div class="bar">
+        <div class="seg sb" style="width:30%">🧠 30%</div>
+        <div class="seg se" style="width:40%">👂 40%</div>
+        <div class="seg sm" style="width:30%">👄 30%</div>
+      </div></div>
+    </div>
+    <div class="rnote">👂はほぼ目標通り。👄がESL授業の構造上+5pt高い。自習時間をほぼ🧠(WS)に振ることで補完。<br>※流し聞（月・水 各1h）はスケジュール記載のみ・比率に含まず</div>
+  </div>
+
+  <div class="legend">
+    <span class="leg"><span class="ld" style="background:#DDDAF8"></span>ESL授業</span>
+    <span class="leg"><span class="ld" style="background:#FFF0CC"></span>🧠 WS</span>
+    <span class="leg"><span class="ld" style="background:#D0F0E8"></span>👄 発音添削</span>
+    <span class="leg"><span class="ld" style="background:#FDEBD6"></span>👄 やり直し・Cambly</span>
+    <span class="leg"><span class="ld" style="background:#E3E1FB"></span>👂 短文L</span>
+    <span class="leg"><span style="display:inline-block;width:8px;height:8px;border:1px dashed #999;border-radius:2px"></span>流し聞のみ</span>
+  </div>
+
+  <div class="cal-wrap">
+  <div class="grid">
+    <div></div>
+    <div class="dh dh-h">月<div class="ds">⚠7.5h</div></div>
+    <div class="dh">火<div class="ds">5.75h</div></div>
+    <div class="dh dh-h">水<div class="ds">⚠8.25h</div></div>
+    <div class="dh">木<div class="ds">5.75h</div></div>
+    <div class="dh">金<div class="ds">5.25h</div></div>
+    <div class="dh">土<div class="ds">1h</div></div>
+    <div class="dh">日<div class="ds">0.5h</div></div>
+    <div class="tl"><span>9</span><span>⋮</span><span>12</span></div>
+    <div class="slot"><div class="blk c-esl">Pronunciation 👄<div class="bs">3h</div></div></div>
+    <div class="slot"><div class="blk c-esl">Conversation 👂<div class="bs">3h</div></div></div>
+    <div class="slot"><div class="blk c-esl">Pronunciation 👄<div class="bs">3h</div></div></div>
+    <div class="slot"><div class="blk c-esl">Conversation 👂<div class="bs">3h</div></div></div>
+    <div class="slot se2"></div><div class="slot se2"></div><div class="slot se2"></div>
+    <div class="tl"><span>12</span><span>⋮</span><span>14</span></div>
+    <div class="slot"><div class="blk c-esl">Voice&Diction 👂👄<div class="bs">2h</div></div></div>
+    <div class="slot se2"></div>
+    <div class="slot"><div class="blk c-esl">Voice&Diction 👂👄<div class="bs">2h</div></div></div>
+    <div class="slot se2"></div><div class="slot se2"></div><div class="slot se2"></div><div class="slot se2"></div>
+    <div class="tl"><span>14</span><span>⋮</span><span>18</span></div>
+    <div class="slot"><div class="blk c-ear">短文L 👂<div class="bs">15m</div></div></div>
+    <div class="slot">
+      <div class="blk c-ws">WS 🧠<div class="bs">2.5h</div></div>
+      <div class="blk c-ear">短文L 👂<div class="bs">15m</div></div>
+    </div>
+    <div class="slot"><div class="blk c-ear">短文L 👂<div class="bs">15m</div></div></div>
+    <div class="slot">
+      <div class="blk c-ws">WS 🧠<div class="bs">2h</div></div>
+      <div class="blk c-yari">やり直し 月分 👄<div class="bs">30m</div></div>
+      <div class="blk c-ear">短文L 👂<div class="bs">15m</div></div>
+    </div>
+    <div class="slot">
+      <div class="blk c-ws">WS 🧠<div class="bs">3h</div></div>
+      <div class="blk c-ear">短文L 👂<div class="bs">15m</div></div>
+    </div>
+    <div class="slot">
+      <div class="blk c-onsa">土締切 提出 👄<div class="bs">15m</div></div>
+      <div class="blk c-ws">WS復習 🧠<div class="bs">45m</div></div>
+    </div>
+    <div class="slot"><div class="blk c-lite">振り返り<div class="bs">30m</div></div></div>
+    <div class="tl"><span>18</span><span>⋮</span><span>21</span></div>
+    <div class="slot">
+      <div class="blk c-onsa">発音添削 月締切 👄<div class="bs">手本10m＋練習1h</div></div>
+      <div class="blk c-sch">流し聞 👂<div class="bs">1h</div></div>
+    </div>
+    <div class="slot se2"></div>
+    <div class="slot">
+      <div class="blk c-onsa">発音添削 水締切 👄<div class="bs">手本1m＋練習2h</div></div>
+      <div class="blk c-sch">流し聞 👂<div class="bs">1h</div></div>
+    </div>
+    <div class="slot"><div class="blk c-lite">Cambly準備 👄<div class="bs">5m（夜）</div></div></div>
+    <div class="slot">
+      <div class="blk c-yari">Cambly＋振り返り 👄<div class="bs">45m</div></div>
+      <div class="blk c-yari">やり直し 水分 👄<div class="bs">30m</div></div>
+      <div class="blk c-onsa">土締切 準備 👄<div class="bs">手本10m＋練習20m</div></div>
+    </div>
+    <div class="slot se2"></div><div class="slot se2"></div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 3: 基礎知識 ========== -->
+<div class="page" id="knowledge">
+
+  <div class="card">
+    <div class="card-title">📍 現在地と学習フェーズ</div>
+    <div class="phase-row">
+      <div class="circle" style="background:#FFF0CC">🧠</div>
+      <div class="arrow">→</div>
+      <div class="circle now" style="background:#EEEDFE">👂</div>
+      <div class="arrow">→</div>
+      <div class="circle" style="background:#D6F5EB">👄</div>
+    </div>
+    <div class="sd" style="margin-bottom:8px">現在：<b style="color:#1A1A18">👂〜👂+（B2）</b> ／ うろ覚えの知識をブラッシュアップし、聞き取れるようになる段階<br>🧠 知ってる → 👂 聞き取れる → 👄 会話で出せる の順に積み上がっていく</div>
+    <hr class="hr">
+    <div class="krow"><span class="klabel">OSH進捗</span><span class="kval">04 BASIC Level（途中）→ 05 STANDARD → 06 ADVANCED → 総合問題 → 2周目</span></div>
+    <div class="krow"><span class="klabel">次のフェーズ</span><span class="kval">👂+ が固まったら 👄（7月以降が目安）</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 比率の考え方</div>
+    <div class="rrow" style="margin-bottom:5px">
+      <span class="rl" style="font-size:10px;color:#73726C;width:80px">OSH推奨</span>
+      <div class="rw"><div class="bar"><div class="seg sb" style="width:35%">🧠35%</div><div class="seg se" style="width:40%">👂40%</div><div class="seg sm" style="width:25%">👄25%</div></div></div>
+    </div>
+    <div class="rrow" style="margin-bottom:8px">
+      <span class="rl" style="font-size:10px;color:#73726C;width:80px">ESL期 実際</span>
+      <div class="rw"><div class="bar"><div class="seg sb" style="width:30%">🧠30%</div><div class="seg se" style="width:40%">👂40%</div><div class="seg sm" style="width:30%">👄30%</div></div></div>
+    </div>
+    <div class="sd">比率を守る理由：伸び方にムラが出ないため。効率が上がる。<br>👄が多い時は🧠の時間を意識的に増やして補う（OSH方針）<br><span class="tag tr">⚠</span> 耳・口でオーバーしたら🧠の時間でカバーする</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧬 SLA理論：なぜこのやり方か</div>
+    <div class="krow"><span class="klabel">リスニング</span><span class="kval">音声知覚（音→単語）＋ 意味理解（知識で解読）＋ 情報保持 の3層同時処理</span></div>
+    <div class="krow"><span class="klabel">自動化の鍵</span><span class="kval">同じ素材を意識的に繰り返す。目安：週140回接触。スポーツの素振りと同じ。</span></div>
+    <div class="krow"><span class="klabel">WPM現状</span><span class="kval">リーディング127（目標130） ／ スピーキング未測定（月1で計測）</span></div>
+    <div class="krow"><span class="klabel">チャンク読み</span><span class="kval">SVOCで構造理解 → 音声理解と意味理解の橋渡しになる（WSがこれを担う）</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📚 語彙の方針</div>
+    <div class="krow"><span class="klabel">基本方針</span><span class="kval">フラッシュカードアプリはやらない（通知無視・カード作成で満足・忘れる）</span></div>
+    <div class="krow"><span class="klabel">出会い型</span><span class="kval">WSで出てきた単語をAIでその場深掘り（語根・派生語・コロケーション）。10分以内。</span></div>
+    <div class="krow"><span class="klabel">逆引き</span><span class="kval"><span class="tag tg">ozdic.com</span> コロケーション ／ <span class="tag tg">etymonline.com</span> 語根・語源</span></div>
+    <div class="krow"><span class="klabel">Clacel</span><span class="kval">隙間時間のみ。残り約500語のギャップを埋める目的。</span></div>
+    <div class="krow"><span class="klabel">品詞マップ</span><span class="kval">WSの照合リストとして使う。OSHで明示されない4項目は「出会い型」で潰す：<br><span class="tag tb2">他動詞・自動詞</span><span class="tag tb2">状態・動作動詞</span><span class="tag tb2">加算・不可算</span><span class="tag tb2">接続詞の種類</span></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧩 ADHD×学習の心構え</div>
+    <div class="krow"><span class="klabel">自分の傾向</span><span class="kval">計画フェーズが楽しく実行で失速。カード作成に満足して覚えるまで辿り着かない。通知を無視するようになる。</span></div>
+    <div class="krow"><span class="klabel">根本対策</span><span class="kval">起動コストを下げる設計（前日夜に素材・ページ番号を準備）。タイマーを最初にセット。手順書を毎回見る。</span></div>
+    <div class="krow"><span class="klabel">反復への誤解</span><span class="kval">「反復が嫌い」ではなく「意味のない反復」が嫌い。数学のドリル・世界史の暗記は好きだった → 英語も同じ構造で設計できる。</span></div>
+    <div class="krow"><span class="klabel">文法＝公式</span><span class="kval">パターンを見つけて答えが出た瞬間のスッキリ感はWSのテスト（2秒ルール）と同じ。WPMは数値で測れるゲーム。</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗓 今後の展開</div>
+    <div class="krow"><span class="klabel">7月中旬</span><span class="kval">ESL終了 → OSH＋Cambly中心の自走期。WS時間を増やして🧠比率を上げる。</span></div>
+    <div class="krow"><span class="klabel">7月以降</span><span class="kval">瞬間英作文を検討（文章化自動化。アプリ入れておく）。Conversationは文章化の代わりにならない。</span></div>
+    <div class="krow"><span class="klabel">OSH期限</span><span class="kval">6ヶ月で使い切る（発音添削・アーカイブ視聴の期限あり）。4月スタート → 9月末が目安。</span></div>
+    <div class="krow"><span class="klabel">月1チェック</span><span class="kval">リーディングWPM ／ スピーキングWPM ／ TOEIC Part3・4理解度 ／ 説明できる文法項目数</span></div>
+  </div>
+
+</div>
+
+<script>
+function showPage(btn, id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tnbtn').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+}
+function showTab(btn, id) {
+  document.querySelectorAll('.mtc').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.mtb').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+}
+</script>
+</body>
+</html>
