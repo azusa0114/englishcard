@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>週間スケジュール</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;user-select:none;-webkit-user-select:none}
+header{background:#1A1A18;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.h-title{color:#F5F4EF;font-size:14px;font-weight:600}
+.h-note{color:#73726C;font-size:10px;line-height:1.6}
+.h-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sync-pill{font-size:10px;padding:3px 9px;border-radius:99px;border:1px solid #3a3a38;color:#73726C;cursor:default;white-space:nowrap}
+.sync-pill.ok{color:#5DCAA5;border-color:#2a5040}
+.sync-pill.err{color:#F0997B;border-color:#5a2a1a}
+.sync-pill.busy{color:#FAC775;border-color:#5a4a00}
+.setup-btn{background:transparent;border:1px solid #3a3a38;border-radius:6px;padding:4px 10px;font-family:inherit;font-size:10px;color:#73726C;cursor:pointer}
+.setup-btn:hover{border-color:#73726C;color:#F5F4EF}
+/* Setup panel */
+.setup-panel{background:#fff;border-bottom:1px solid #E8E5DF;padding:10px 14px;display:none}
+.setup-panel.open{display:block}
+.setup-title{font-size:11px;font-weight:600;margin-bottom:8px;color:#1A1A18}
+.setup-steps{font-size:10px;color:#73726C;line-height:1.8;margin-bottom:10px;background:#F5F4EF;border-radius:6px;padding:8px 10px}
+.setup-steps a{color:#3C3489}
+.setup-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.setup-label{font-size:10px;color:#73726C;white-space:nowrap;min-width:90px}
+.setup-input{flex:1;min-width:160px;padding:5px 8px;border:1px solid #D9D6CF;border-radius:6px;font-family:inherit;font-size:11px;background:#FAFAF8;color:#1A1A18}
+.setup-input:focus{outline:none;border-color:#3C3489}
+.connect-btn{background:#3C3489;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-family:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.connect-btn:hover{background:#2d2570}
+.setup-status{font-size:10px;margin-top:6px;color:#73726C;min-height:16px}
+/* Top bar */
+.top-bar{padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #E8E5DF}
+.ratio-outer{flex:1;min-width:200px}
+.ratio-label{font-size:10px;color:#73726C;margin-bottom:4px}
+.ratio-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;width:100%}
+.rs{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;transition:width .2s}
+.total-label{font-size:10px;color:#73726C;white-space:nowrap}
+.btn{background:#F1EFE8;border:1px solid #D9D6CF;border-radius:6px;padding:5px 11px;font-family:inherit;font-size:10px;color:#73726C;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn:hover{background:#E8E5DF}
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px;padding:6px 14px;font-size:10px;color:#73726C;border-bottom:1px solid #E8E5DF}
+.leg{display:flex;align-items:center;gap:3px}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+/* Calendar */
+.cal-scroll{overflow:auto;padding:12px 14px 40px}
+.cal{display:grid;gap:2px;width:fit-content;min-width:100%}
+.day-hdr{font-size:11px;font-weight:500;text-align:center;padding:5px 3px;border-radius:5px 5px 0 0;background:#F1EFE8;position:sticky;top:0;z-index:20}
+.day-hdr.heavy{background:#FFF0CC;color:#5C3D00}
+.day-body{position:relative;background:#FAFAF8;border:0.5px solid #D9D6CF;border-radius:0 0 5px 5px}
+.hline{position:absolute;left:0;right:0;pointer-events:none;z-index:0}
+.block{position:absolute;left:2px;right:2px;border-radius:4px;overflow:visible;z-index:2}
+.block-body{position:absolute;top:5px;bottom:5px;left:0;right:0;padding:3px 5px;cursor:grab;overflow:hidden;border-radius:3px}
+.block-body:active{cursor:grabbing}
+.block.fixed .block-body{cursor:default}
+.block.dragging{z-index:200;opacity:.9}
+.block.dragging .block-body{box-shadow:0 4px 16px rgba(0,0,0,.22);cursor:grabbing}
+.resize-top,.resize-bot{position:absolute;left:0;right:0;height:7px;z-index:10;cursor:ns-resize;display:flex;align-items:center;justify-content:center}
+.resize-top{top:-1px}.resize-bot{bottom:-1px}
+.resize-top::before,.resize-bot::before{content:'';display:block;width:20px;height:2px;border-radius:1px;background:rgba(0,0,0,.18)}
+.block.fixed .resize-top,.block.fixed .resize-bot{display:none}
+.blabel{font-size:9px;font-weight:500;line-height:1.3;white-space:pre-wrap}
+.btime{font-size:8px;opacity:.65;margin-top:1px}
+.tooltip{position:fixed;background:#1A1A18;color:#F5F4EF;font-size:10px;padding:3px 9px;border-radius:4px;pointer-events:none;z-index:1000;display:none;white-space:nowrap}
+.time-axis{position:relative;flex-shrink:0}
+.time-mark{position:absolute;right:4px;font-size:8px;color:#B0ADB8;transform:translateY(-50%);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-title">英語学習 週間スケジュール</div>
+    <div class="h-note">📌 ドラッグ：移動 ／ ↕ 上下端：伸縮 ／ 15分スナップ ／ 比率は自動連動</div>
+  </div>
+  <div class="h-right">
+    <div class="sync-pill" id="syncPill">⚙ 未接続</div>
+    <button class="setup-btn" onclick="toggleSetup()">⚙ 設定</button>
+  </div>
+</header>
+
+<!-- Setup Panel -->
+<div class="setup-panel" id="setupPanel">
+  <div class="setup-title">GitHub Gist 同期設定</div>
+  <div class="setup-steps">
+    <b>初回設定（1回だけ）:</b><br>
+    ① <a href="https://github.com/settings/tokens/new?scopes=gist" target="_blank">GitHub → Settings → Tokens → Generate new token</a><br>
+    ② <b>gist</b> にチェックを入れてトークンを作成・コピー<br>
+    ③ 下のフィールドにペーストして「接続」<br>
+    ④ 他のデバイスでも同じトークンを入力すれば自動的にデータが同期されます
+  </div>
+  <div class="setup-row">
+    <span class="setup-label">GitHub Token</span>
+    <input type="password" id="tokenInput" class="setup-input" placeholder="ghp_xxxxxxxxxxxx">
+    <button class="connect-btn" onclick="connect()">接続</button>
+  </div>
+  <div class="setup-status" id="setupStatus"></div>
+</div>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <div class="ratio-outer">
+    <div class="ratio-label">週の比率（比率対象のみ）</div>
+    <div class="ratio-bar">
+      <div class="rs" id="rb" style="background:#FAC775;color:#412402">🧠—%</div>
+      <div class="rs" id="re" style="background:#AFA9EC;color:#26215C">👂—%</div>
+      <div class="rs" id="rm" style="background:#5DCAA5;color:#04342C">👄—%</div>
+    </div>
+  </div>
+  <div class="total-label" id="totalLabel">週計 — h</div>
+  <button class="btn" onclick="resetAll()">↺ リセット</button>
+</div>
+
+<div class="legend">
+  <span class="leg"><span class="ld" style="background:#DDDAF8"></span>ESL授業（固定）</span>
+  <span class="leg"><span class="ld" style="background:#FFF0CC"></span>🧠 WS</span>
+  <span class="leg"><span class="ld" style="background:#D0F0E8"></span>👄 発音添削</span>
+  <span class="leg"><span class="ld" style="background:#FDEBD6"></span>👄 やり直し・Cambly</span>
+  <span class="leg"><span class="ld" style="background:#E3E1FB"></span>👂 短文L</span>
+  <span class="leg"><span style="display:inline-block;width:8px;height:8px;border:1px dashed #B0ADB8;border-radius:2px"></span>流し聞</span>
+  <span class="leg"><span class="ld" style="background:#FFF5E8;border:1px solid #E8CFA0"></span>🍱ランチ / 🍽️夕食（比率外）</span>
+</div>
+
+<div class="cal-scroll"><div class="cal" id="cal"></div></div>
+<div class="tooltip" id="tt"></div>
+
+<script>
+// ── Constants ────────────────────────────────
+const SC=1.0,SM=7*60,EM=22*60,TH=(EM-SM)*SC,SN=15,MINPX=SN*SC;
+const DAYS=['月','火','水','木','金','土','日'],HEAVY=[0,2];
+const GIST_FILE='eigo_schedule.json';
+const LS_TOKEN='eigo_gh_token',LS_GIST='eigo_gist_id',LS_LOCAL='eigo_local_v2';
+
+function tp(h,m=0){return(h*60+m-SM)*SC}
+function dp(m){return m*SC}
+function snp(px){return Math.round(px/(SN*SC))*(SN*SC)}
+function fmt(px){const t=Math.round(px/SC)+SM,h=Math.floor(t/60),m=t%60;return h+':'+(m<10?'0':'')+m}
+function meal(id,l,d,sh,bg='#FFF5E8',tc='#7A4A00'){return{id,l,d,y:tp(sh),h:dp(60),bg,tc,fx:false,cat:null,bdr:'1px solid #E8CFA0'}}
+
+// ── Data ─────────────────────────────────────
+const ORIG=[
+  {id:'pn0',l:'Pronunciation\n👂👄 口トレ',d:0,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.5,m:.5}},
+  {id:'pn2',l:'Pronunciation\n👂👄 口トレ',d:2,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.5,m:.5}},
+  {id:'cv1',l:'Conversation 👂',d:1,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.7,m:.3}},
+  {id:'cv3',l:'Conversation 👂',d:3,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.7,m:.3}},
+  meal('lc0','🍱 ランチ',0,12),meal('lc1','🍱 ランチ',1,12),meal('lc2','🍱 ランチ',2,12),
+  meal('lc3','🍱 ランチ',3,12),meal('lc4','🍱 ランチ',4,12),meal('lc5','🍱 ランチ',5,12),meal('lc6','🍱 ランチ',6,12),
+  meal('dc0','🍽️ 夕食',0,18,'#FFF0E8','#7A3A00'),meal('dc1','🍽️ 夕食',1,18,'#FFF0E8','#7A3A00'),
+  meal('dc2','🍽️ 夕食',2,18,'#FFF0E8','#7A3A00'),meal('dc3','🍽️ 夕食',3,18,'#FFF0E8','#7A3A00'),
+  meal('dc4','🍽️ 夕食',4,18,'#FFF0E8','#7A3A00'),meal('dc5','🍽️ 夕食',5,18,'#FFF0E8','#7A3A00'),
+  meal('dc6','🍽️ 夕食',6,18,'#FFF0E8','#7A3A00'),
+  {id:'om0',l:'発音添削 月締切 👄\n手本10m＋練習1h',d:0,y:tp(13),h:dp(70),bg:'#D0F0E8',tc:'#065045',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'ng0',l:'流し聞 👂',d:0,y:tp(14,10),h:dp(60),bg:'transparent',tc:'#73726C',fx:false,cat:null,dash:true},
+  {id:'ws0',l:'WS 🧠',d:0,y:tp(15,10),h:dp(120),bg:'#FFF0CC',tc:'#5C3D00',fx:false,cat:{b:1,e:0,m:0}},
+  {id:'sl0',l:'短文L 👂',d:0,y:tp(17,10),h:dp(15),bg:'#E3E1FB',tc:'#3C3489',fx:false,cat:{b:0,e:1,m:0}},
+  {id:'ws1',l:'WS 🧠',d:1,y:tp(13,30),h:dp(150),bg:'#FFF0CC',tc:'#5C3D00',fx:false,cat:{b:1,e:0,m:0}},
+  {id:'sl1',l:'短文L 👂',d:1,y:tp(16),h:dp(15),bg:'#E3E1FB',tc:'#3C3489',fx:false,cat:{b:0,e:1,m:0}},
+  {id:'ow2',l:'発音添削 水締切 👄\n手本1m＋練習2h',d:2,y:tp(13),h:dp(121),bg:'#D0F0E8',tc:'#065045',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'ng2',l:'流し聞 👂',d:2,y:tp(15,1),h:dp(60),bg:'transparent',tc:'#73726C',fx:false,cat:null,dash:true},
+  {id:'sl2',l:'短文L 👂',d:2,y:tp(16,1),h:dp(15),bg:'#E3E1FB',tc:'#3C3489',fx:false,cat:{b:0,e:1,m:0}},
+  {id:'ws3',l:'WS 🧠',d:3,y:tp(13,30),h:dp(120),bg:'#FFF0CC',tc:'#5C3D00',fx:false,cat:{b:1,e:0,m:0}},
+  {id:'yr3',l:'やり直し 月分 👄',d:3,y:tp(15,30),h:dp(30),bg:'#FDEBD6',tc:'#6B2D00',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'sl3',l:'短文L 👂',d:3,y:tp(16),h:dp(15),bg:'#E3E1FB',tc:'#3C3489',fx:false,cat:{b:0,e:1,m:0}},
+  {id:'ws4',l:'WS 🧠',d:4,y:tp(13),h:dp(180),bg:'#FFF0CC',tc:'#5C3D00',fx:false,cat:{b:1,e:0,m:0}},
+  {id:'sl4',l:'短文L 👂',d:4,y:tp(16),h:dp(15),bg:'#E3E1FB',tc:'#3C3489',fx:false,cat:{b:0,e:1,m:0}},
+  {id:'cb4',l:'Cambly＋振り返り 👄',d:4,y:tp(16,15),h:dp(45),bg:'#FDEBD6',tc:'#6B2D00',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'yr4',l:'やり直し 水分 👄',d:4,y:tp(17),h:dp(30),bg:'#FDEBD6',tc:'#6B2D00',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'dp4',l:'土締切準備 👄',d:4,y:tp(17,30),h:dp(30),bg:'#D0F0E8',tc:'#065045',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'ds5',l:'土締切 提出 👄',d:5,y:tp(10),h:dp(15),bg:'#D0F0E8',tc:'#065045',fx:false,cat:{b:0,e:0,m:1}},
+  {id:'wr5',l:'WS復習 🧠',d:5,y:tp(10,15),h:dp(45),bg:'#FFF0CC',tc:'#5C3D00',fx:false,cat:{b:1,e:0,m:0}},
+  {id:'fk6',l:'振り返り',d:6,y:tp(10),h:dp(30),bg:'#F1EFE8',tc:'#73726C',fx:false,cat:null},
+];
+
+let state=ORIG.map(a=>({...a}));
+let drag=null,saveTimer=null;
+
+// ── Sync status ───────────────────────────────
+function setSyncPill(text,cls=''){
+  const el=document.getElementById('syncPill');
+  el.textContent=text;
+  el.className='sync-pill'+(cls?' '+cls:'');
+}
+function setSetupStatus(text){document.getElementById('setupStatus').textContent=text;}
+
+// ── GitHub Gist ───────────────────────────────
+async function ghFetch(url,opts={}){
+  const token=localStorage.getItem(LS_TOKEN);
+  return fetch('https://api.github.com'+url,{
+    ...opts,
+    headers:{'Authorization':'token '+token,'Content-Type':'application/json',...(opts.headers||{})}
+  });
+}
+
+async function findOrCreateGist(){
+  // Search in first 100 gists
+  const res=await ghFetch('/gists?per_page=100');
+  if(!res.ok)throw new Error('Token invalid ('+res.status+')');
+  const gists=await res.json();
+  const found=gists.find(g=>g.files&&g.files[GIST_FILE]);
+  if(found){return found.id;}
+  // Create new
+  const cr=await ghFetch('/gists',{method:'POST',body:JSON.stringify({
+    description:'英語学習スケジュール（自動生成）',public:false,
+    files:{[GIST_FILE]:{content:JSON.stringify({v:2,state:[]})}}
+  })});
+  if(!cr.ok)throw new Error('Gist作成失敗');
+  const g=await cr.json();
+  return g.id;
+}
+
+async function connect(){
+  const token=document.getElementById('tokenInput').value.trim();
+  if(!token){setSetupStatus('⚠️ トークンを入力してください');return;}
+  setSetupStatus('🟡 接続中...');setSyncPill('🟡 接続中...','busy');
+  try{
+    localStorage.setItem(LS_TOKEN,token);
+    const gistId=await findOrCreateGist();
+    localStorage.setItem(LS_GIST,gistId);
+    setSetupStatus('🟢 接続完了！ Gist ID: '+gistId+'\n他のデバイスでも同じトークンを入力すると同期されます。');
+    setSyncPill('🟢 同期済み','ok');
+    await loadFromGist();
+    render();updateRatio();
+  }catch(e){
+    setSetupStatus('⚠️ エラー: '+e.message);
+    setSyncPill('⚠️ エラー','err');
+    localStorage.removeItem(LS_TOKEN);
+  }
+}
+
+function serializeState(){
+  return state.map(a=>({id:a.id,d:a.d,y:Math.round(a.y),h:Math.round(a.h)}));
+}
+function applyState(saved){
+  saved.forEach(s=>{
+    const a=state.find(x=>x.id===s.id);
+    if(a&&!a.fx){a.d=s.d;a.y=s.y;a.h=Math.max(MINPX,s.h);}
+  });
+}
+
+async function saveToGist(){
+  const token=localStorage.getItem(LS_TOKEN),gistId=localStorage.getItem(LS_GIST);
+  // Always save locally
+  try{localStorage.setItem(LS_LOCAL,JSON.stringify(serializeState()));}catch(e){}
+  if(!token||!gistId)return;
+  setSyncPill('💾 保存中...','busy');
+  try{
+    await ghFetch('/gists/'+gistId,{method:'PATCH',body:JSON.stringify({
+      files:{[GIST_FILE]:{content:JSON.stringify({v:2,savedAt:new Date().toISOString(),state:serializeState()})}}
+    })});
+    setSyncPill('🟢 同期済み','ok');
+  }catch(e){
+    setSyncPill('📴 オフライン','err');
+  }
+}
+
+async function loadFromGist(){
+  const token=localStorage.getItem(LS_TOKEN),gistId=localStorage.getItem(LS_GIST);
+  if(!token||!gistId){loadLocal();return;}
+  setSyncPill('🟡 読込中...','busy');
+  try{
+    const res=await ghFetch('/gists/'+gistId);
+    if(!res.ok)throw new Error(res.status);
+    const g=await res.json();
+    const content=g.files[GIST_FILE]?.content;
+    if(content){
+      const data=JSON.parse(content);
+      if(data.state?.length)applyState(data.state);
+    }
+    setSyncPill('🟢 同期済み','ok');
+  }catch(e){
+    setSyncPill('📴 オフライン','err');
+    loadLocal();
+  }
+}
+
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(LS_LOCAL);
+    if(raw)applyState(JSON.parse(raw));
+  }catch(e){}
+}
+
+function debouncedSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveToGist,2000);
+}
+
+// ── UI ────────────────────────────────────────
+function toggleSetup(){
+  const p=document.getElementById('setupPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')){
+    const token=localStorage.getItem(LS_TOKEN);
+    if(token)document.getElementById('tokenInput').value=token;
+    const gistId=localStorage.getItem(LS_GIST);
+    if(gistId&&token)setSetupStatus('接続済み – Gist ID: '+gistId);
+  }
+}
+
+function resetAll(){
+  if(!confirm('リセットしますか？（Gistのデータも上書きされます）'))return;
+  state=ORIG.map(a=>({...a}));
+  render();updateRatio();saveToGist();
+}
+
+// ── Ratio ─────────────────────────────────────
+function calcRatio(){
+  let b=0,e=0,m=0;
+  state.forEach(a=>{if(!a.cat)return;const min=a.h/SC;b+=min*a.cat.b;e+=min*a.cat.e;m+=min*a.cat.m;});
+  const t=b+e+m;return t>0?{b:b/t,e:e/t,m:m/t}:{b:.35,e:.4,m:.25};
+}
+function calcTotal(){let t=0;state.forEach(a=>{if(a.cat)t+=a.h/SC;});return Math.round(t/60*10)/10;}
+function updateRatio(){
+  const r=calcRatio(),bp=Math.round(r.b*100),ep=Math.round(r.e*100),mp=100-bp-ep;
+  const rb=document.getElementById('rb'),re=document.getElementById('re'),rm=document.getElementById('rm');
+  rb.style.width=bp+'%';rb.textContent='🧠'+bp+'%';
+  re.style.width=ep+'%';re.textContent='👂'+ep+'%';
+  rm.style.width=mp+'%';rm.textContent='👄'+mp+'%';
+  document.getElementById('totalLabel').textContent='週計 '+calcTotal()+'h';
+}
+
+// ── Render ────────────────────────────────────
+function getColRect(d){return document.querySelector(`.day-body[data-d="${d}"]`)?.getBoundingClientRect();}
+function getDayFromX(cx){let f=-1;document.querySelectorAll('.day-body').forEach(c=>{const r=c.getBoundingClientRect();if(cx>=r.left&&cx<=r.right)f=+c.dataset.d;});return f;}
+
+function render(){
+  const cal=document.getElementById('cal');
+  const COL=Math.max(75,Math.floor((window.innerWidth-14*2-40)/7));
+  cal.style.gridTemplateColumns=`40px repeat(7,${COL}px)`;
+  let html='<div class="time-axis" style="height:'+TH+'px;margin-top:31px">';
+  for(let h=7;h<=22;h++){
+    html+=`<div class="time-mark" style="top:${tp(h)}px">${h}</div>`;
+    if(h<22)html+=`<div class="time-mark" style="top:${tp(h,30)}px;opacity:.4;font-size:7px">:30</div>`;
+  }
+  html+='</div>';
+  DAYS.forEach((name,di)=>{
+    const heavy=HEAVY.includes(di);
+    html+=`<div style="display:flex;flex-direction:column"><div class="day-hdr${heavy?' heavy':''}">${name}</div><div class="day-body" data-d="${di}" style="height:${TH}px">`;
+    for(let h=7;h<=22;h++){
+      const sty=h===12||h===18?'#C8C4BC':'#ECEAE4';
+      html+=`<div class="hline" style="top:${tp(h)}px;height:1px;background:${sty}"></div>`;
+      if(h<22)html+=`<div class="hline" style="top:${tp(h,30)}px;height:.5px;background:#F0EDE8"></div>`;
+    }
+    state.filter(a=>a.d===di).sort((a,b)=>a.y-b.y).forEach(a=>{
+      const visH=Math.max(a.h,MINPX);
+      const bdr=a.bdr?`border:${a.bdr};`:a.dash?'border:1.5px dashed #B0ADB8;':'';
+      const bg=a.dash?'transparent':a.bg;
+      const isShort=a.h<dp(25);
+      html+=`<div class="block${a.fx?' fixed':''}" data-id="${a.id}" style="top:${a.y}px;height:${visH}px;background:${bg};${bdr}">
+        ${!a.fx?`<div class="resize-top" data-id="${a.id}" data-dir="top"></div>`:''}
+        <div class="block-body" data-id="${a.id}" style="background:${bg};color:${a.tc}">
+          <div class="blabel" style="color:${a.tc}">${a.l}</div>
+          ${!a.fx&&!isShort?`<div class="btime">${fmt(a.y)}–${fmt(a.y+a.h)}</div>`:''}
+        </div>
+        ${!a.fx?`<div class="resize-bot" data-id="${a.id}" data-dir="bot"></div>`:''}
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  cal.innerHTML=html;
+  attachEvents();
+}
+
+function attachEvents(){
+  document.querySelectorAll('.resize-top,.resize-bot').forEach(el=>{
+    const fn=(cx,cy)=>startDrag(cx,cy,el.dataset.dir,el.dataset.id);
+    el.addEventListener('mousedown',e=>{e.stopPropagation();fn(e.clientX,e.clientY);});
+    el.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();fn(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+  });
+  document.querySelectorAll('.block-body').forEach(el=>{
+    if(el.closest('.block').classList.contains('fixed'))return;
+    const fn=(cx,cy)=>startDrag(cx,cy,'move',el.dataset.id);
+    el.addEventListener('mousedown',e=>fn(e.clientX,e.clientY));
+    el.addEventListener('touchstart',e=>{e.preventDefault();fn(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+  });
+}
+
+function startDrag(cx,cy,type,id){
+  const act=state.find(a=>a.id===id);
+  if(!act||act.fx)return;
+  const cr=getColRect(act.d);if(!cr)return;
+  drag={type,id,act,origY:act.y,origH:act.h,
+    oy:type==='move'?cy+window.scrollY-(cr.top+window.scrollY)-act.y:0};
+  document.querySelector(`.block[data-id="${id}"]`)?.classList.add('dragging');
+}
+
+function onMove(cx,cy){
+  if(!drag)return;
+  const{type,act}=drag,tt=document.getElementById('tt'),sy=window.scrollY;
+  if(type==='move'){
+    const td=getDayFromX(cx);if(td>=0)act.d=td;
+    const cr=getColRect(act.d);if(!cr)return;
+    act.y=Math.max(0,Math.min(TH-act.h,snp(cy+sy-(cr.top+sy)-drag.oy)));
+    tt.textContent=`${fmt(act.y)} – ${fmt(act.y+act.h)}`;
+  }else if(type==='top'){
+    const cr=getColRect(act.d);if(!cr)return;
+    const ny=Math.max(0,Math.min(drag.origY+drag.origH-MINPX,snp(cy+sy-(cr.top+sy))));
+    act.y=ny;act.h=drag.origY+drag.origH-ny;
+    tt.textContent=`${fmt(act.y)} – ${fmt(act.y+act.h)} (${Math.round(act.h/SC)}分)`;
+  }else if(type==='bot'){
+    const cr=getColRect(act.d);if(!cr)return;
+    act.h=Math.max(MINPX,Math.min(TH-drag.origY,snp(cy+sy-(cr.top+sy))-drag.origY));
+    tt.textContent=`${fmt(act.y)} – ${fmt(act.y+act.h)} (${Math.round(act.h/SC)}分)`;
+  }
+  tt.style.cssText=`display:block;left:${cx+14}px;top:${cy-10}px`;
+  render();
+  document.querySelector(`.block[data-id="${drag.id}"]`)?.classList.add('dragging');
+  updateRatio();
+}
+
+function onUp(){
+  if(!drag)return;drag=null;
+  document.getElementById('tt').style.display='none';
+  render();updateRatio();debouncedSave();
+}
+
+document.addEventListener('mousemove',e=>{if(drag)onMove(e.clientX,e.clientY);});
+document.addEventListener('mouseup',onUp);
+document.addEventListener('touchmove',e=>{if(drag){e.preventDefault();const t=e.touches[0];onMove(t.clientX,t.clientY);}},{passive:false});
+document.addEventListener('touchend',onUp);
+window.addEventListener('resize',()=>{render();updateRatio();});
+
+// ── Init ──────────────────────────────────────
+(async()=>{
+  const token=localStorage.getItem(LS_TOKEN),gistId=localStorage.getItem(LS_GIST);
+  if(token&&gistId){
+    await loadFromGist();
+  }else{
+    loadLocal();
+    setSyncPill('⚙ 未接続');
+  }
+  render();updateRatio();
+})();
+</script>
+</body>
+</html>
