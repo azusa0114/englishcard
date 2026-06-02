@@ -293,97 +293,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;min-
 
 <!-- ========== PAGE 2: スケジュール ========== -->
 <div class="page" id="schedule">
-  <div class="ratio-card">
-    <div class="ratio-title">週の比率（計 〜30h）</div>
-    <div class="rrow">
-      <span class="rl">OSH推奨</span>
-      <div class="rw"><div class="bar">
-        <div class="seg sb" style="width:35%">🧠 35%</div>
-        <div class="seg se" style="width:40%">👂 40%</div>
-        <div class="seg sm" style="width:25%">👄 25%</div>
-      </div></div>
+  <a href="./schedule_interactive.html" target="_blank"
+     style="display:flex;align-items:center;gap:8px;background:#1A1A18;color:#F5F4EF;text-decoration:none;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;font-weight:500">
+    <span style="font-size:18px">📅</span>
+    <div>
+      <div>インタラクティブ版スケジュールを開く</div>
+      <div style="font-size:10px;color:#73726C;margin-top:1px">ドラッグ移動・時間伸縮・デバイス間同期対応</div>
     </div>
-    <div class="rrow">
-      <span class="rl">ESL期 実際</span>
-      <div class="rw"><div class="bar">
-        <div class="seg sb" style="width:30%">🧠 30%</div>
-        <div class="seg se" style="width:40%">👂 40%</div>
-        <div class="seg sm" style="width:30%">👄 30%</div>
-      </div></div>
-    </div>
-    <div class="rnote">👂はほぼ目標通り。👄がESL授業の構造上+5pt高い。自習時間をほぼ🧠(WS)に振ることで補完。<br>※流し聞（月・水 各1h）はスケジュール記載のみ・比率に含まず</div>
-  </div>
-
-  <div class="legend">
-    <span class="leg"><span class="ld" style="background:#DDDAF8"></span>ESL授業</span>
-    <span class="leg"><span class="ld" style="background:#FFF0CC"></span>🧠 WS</span>
-    <span class="leg"><span class="ld" style="background:#D0F0E8"></span>👄 発音添削</span>
-    <span class="leg"><span class="ld" style="background:#FDEBD6"></span>👄 やり直し・Cambly</span>
-    <span class="leg"><span class="ld" style="background:#E3E1FB"></span>👂 短文L</span>
-    <span class="leg"><span style="display:inline-block;width:8px;height:8px;border:1px dashed #999;border-radius:2px"></span>流し聞のみ</span>
-  </div>
-
-  <div class="cal-wrap">
-  <div class="grid">
-    <div></div>
-    <div class="dh dh-h">月<div class="ds">⚠7.5h</div></div>
-    <div class="dh">火<div class="ds">5.75h</div></div>
-    <div class="dh dh-h">水<div class="ds">⚠8.25h</div></div>
-    <div class="dh">木<div class="ds">5.75h</div></div>
-    <div class="dh">金<div class="ds">5.25h</div></div>
-    <div class="dh">土<div class="ds">1h</div></div>
-    <div class="dh">日<div class="ds">0.5h</div></div>
-    <div class="tl"><span>9</span><span>⋮</span><span>12</span></div>
-    <div class="slot"><div class="blk c-esl">Pronunciation 👄<div class="bs">3h</div></div></div>
-    <div class="slot"><div class="blk c-esl">Conversation 👂<div class="bs">3h</div></div></div>
-    <div class="slot"><div class="blk c-esl">Pronunciation 👄<div class="bs">3h</div></div></div>
-    <div class="slot"><div class="blk c-esl">Conversation 👂<div class="bs">3h</div></div></div>
-    <div class="slot se2"></div><div class="slot se2"></div><div class="slot se2"></div>
-    <div class="tl"><span>12</span><span>⋮</span><span>14</span></div>
-    <div class="slot"><div class="blk c-esl">Voice&Diction 👂👄<div class="bs">2h</div></div></div>
-    <div class="slot se2"></div>
-    <div class="slot"><div class="blk c-esl">Voice&Diction 👂👄<div class="bs">2h</div></div></div>
-    <div class="slot se2"></div><div class="slot se2"></div><div class="slot se2"></div><div class="slot se2"></div>
-    <div class="tl"><span>14</span><span>⋮</span><span>18</span></div>
-    <div class="slot"><div class="blk c-ear">短文L 👂<div class="bs">15m</div></div></div>
-    <div class="slot">
-      <div class="blk c-ws">WS 🧠<div class="bs">2.5h</div></div>
-      <div class="blk c-ear">短文L 👂<div class="bs">15m</div></div>
-    </div>
-    <div class="slot"><div class="blk c-ear">短文L 👂<div class="bs">15m</div></div></div>
-    <div class="slot">
-      <div class="blk c-ws">WS 🧠<div class="bs">2h</div></div>
-      <div class="blk c-yari">やり直し 月分 👄<div class="bs">30m</div></div>
-      <div class="blk c-ear">短文L 👂<div class="bs">15m</div></div>
-    </div>
-    <div class="slot">
-      <div class="blk c-ws">WS 🧠<div class="bs">3h</div></div>
-      <div class="blk c-ear">短文L 👂<div class="bs">15m</div></div>
-    </div>
-    <div class="slot">
-      <div class="blk c-onsa">土締切 提出 👄<div class="bs">15m</div></div>
-      <div class="blk c-ws">WS復習 🧠<div class="bs">45m</div></div>
-    </div>
-    <div class="slot"><div class="blk c-lite">振り返り<div class="bs">30m</div></div></div>
-    <div class="tl"><span>18</span><span>⋮</span><span>21</span></div>
-    <div class="slot">
-      <div class="blk c-onsa">発音添削 月締切 👄<div class="bs">手本10m＋練習1h</div></div>
-      <div class="blk c-sch">流し聞 👂<div class="bs">1h</div></div>
-    </div>
-    <div class="slot se2"></div>
-    <div class="slot">
-      <div class="blk c-onsa">発音添削 水締切 👄<div class="bs">手本1m＋練習2h</div></div>
-      <div class="blk c-sch">流し聞 👂<div class="bs">1h</div></div>
-    </div>
-    <div class="slot"><div class="blk c-lite">Cambly準備 👄<div class="bs">5m（夜）</div></div></div>
-    <div class="slot">
-      <div class="blk c-yari">Cambly＋振り返り 👄<div class="bs">45m</div></div>
-      <div class="blk c-yari">やり直し 水分 👄<div class="bs">30m</div></div>
-      <div class="blk c-onsa">土締切 準備 👄<div class="bs">手本10m＋練習20m</div></div>
-    </div>
-    <div class="slot se2"></div><div class="slot se2"></div>
-  </div>
-  </div>
+    <span style="margin-left:auto;font-size:14px;color:#73726C">↗</span>
+  </a>
 </div>
 
 <!-- ========== PAGE 3: 基礎知識 ========== -->
@@ -411,8 +329,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;min-
       <div class="rw"><div class="bar"><div class="seg sb" style="width:35%">🧠35%</div><div class="seg se" style="width:40%">👂40%</div><div class="seg sm" style="width:25%">👄25%</div></div></div>
     </div>
     <div class="rrow" style="margin-bottom:8px">
-      <span class="rl" style="font-size:10px;color:#73726C;width:80px">ESL期 実際</span>
-      <div class="rw"><div class="bar"><div class="seg sb" style="width:30%">🧠30%</div><div class="seg se" style="width:40%">👂40%</div><div class="seg sm" style="width:30%">👄30%</div></div></div>
+      <span class="rl" style="font-size:10px;color:#73726C;width:80px">実際</span>
+      <div class="rw"><div class="bar"><div class="seg sb" style="width:37%">🧠37%</div><div class="seg se" style="width:41%">👂41%</div><div class="seg sm" style="width:22%">👄22%</div></div></div>
     </div>
     <div class="sd">比率を守る理由：伸び方にムラが出ないため。効率が上がる。<br>👄が多い時は🧠の時間を意識的に増やして補う（OSH方針）<br><span class="tag tr">⚠</span> 耳・口でオーバーしたら🧠の時間でカバーする</div>
   </div>
