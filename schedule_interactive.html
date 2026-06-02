@@ -200,7 +200,7 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
 </div>
 
 <div class="legend">
-  <span class="leg"><span class="ld" style="background:#DDDAF8"></span>ESL授業（固定）</span>
+  <span class="leg"><span class="ld" style="background:#DDDAF8"></span>ESL授業（Pronunciation/Conversation）</span>
   <span class="leg"><span class="ld" style="background:#FFF0CC"></span>🧠 WS</span>
   <span class="leg"><span class="ld" style="background:#D0F0E8"></span>👄 発音添削</span>
   <span class="leg"><span class="ld" style="background:#FDEBD6"></span>👄 やり直し・Cambly</span>
@@ -226,7 +226,10 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
         <button class="cat-btn on" data-cat="brain" onclick="selCat(this)">🧠 WS</button>
         <button class="cat-btn" data-cat="ear" onclick="selCat(this)">👂 リスニング</button>
         <button class="cat-btn" data-cat="mouth" onclick="selCat(this)">👄 スピーキング</button>
-        <button class="cat-btn" data-cat="none" onclick="selCat(this)">— 比率外</button>
+        <button class="cat-btn" data-cat="pron" onclick="selCat(this)">👂👄 Pronunciation</button>
+        <button class="cat-btn" data-cat="conv" onclick="selCat(this)">👂👄 Conversation</button>
+        <button class="cat-btn" data-cat="meal" onclick="selCat(this)">🍱 食事・休憩</button>
+        <button class="cat-btn" data-cat="none" onclick="selCat(this)">— その他</button>
       </div>
     </div>
     <div class="mfield">
@@ -256,7 +259,7 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
 
 <script>
 // ── Constants ────────────────────────────────
-const SC=1.0,SM=7*60,EM=22*60,TH=(EM-SM)*SC,SN=15,MINPX=SN*SC;
+const SC=1.0,SM=7*60,EM=23*60,TH=(EM-SM)*SC,SN=15,MINPX=SN*SC;
 const DAYS=['月','火','水','木','金','土','日'],HEAVY=[0,2];
 const GIST_FILE='eigo_schedule.json';
 const LS_TOKEN='eigo_gh_token',LS_GIST='eigo_gist_id',LS_LOCAL='eigo_local_v3';
@@ -272,21 +275,24 @@ const CAT_DEFS={
   brain:{bg:'#FFF0CC',tc:'#5C3D00',cat:{b:1,e:0,m:0}},
   ear:  {bg:'#E3E1FB',tc:'#3C3489',cat:{b:0,e:1,m:0}},
   mouth:{bg:'#D0F0E8',tc:'#065045',cat:{b:0,e:0,m:1}},
+  pron: {bg:'#DDDAF8',tc:'#2A2478',cat:{b:0,e:.5,m:.5}},
+  conv: {bg:'#DDDAF8',tc:'#2A2478',cat:{b:0,e:.7,m:.3}},
+  meal: {bg:'#FFF5E8',tc:'#7A4A00',cat:null},
   none: {bg:'#F1EFE8',tc:'#73726C',cat:null}
 };
 
 // ── Original plan data ────────────────────────
 const ORIG=[
-  {id:'pn0',l:'Pronunciation\n👂👄 口トレ',d:0,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.5,m:.5}},
-  {id:'pn2',l:'Pronunciation\n👂👄 口トレ',d:2,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.5,m:.5}},
-  {id:'cv1',l:'Conversation 👂',d:1,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.7,m:.3}},
-  {id:'cv3',l:'Conversation 👂',d:3,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:true,cat:{b:0,e:.7,m:.3}},
+  {id:'pn0',l:'Pronunciation\n👂👄 口トレ',d:0,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:false,cat:{b:0,e:.5,m:.5}},
+  {id:'pn2',l:'Pronunciation\n👂👄 口トレ',d:2,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:false,cat:{b:0,e:.5,m:.5}},
+  {id:'cv1',l:'Conversation 👂',d:1,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:false,cat:{b:0,e:.7,m:.3}},
+  {id:'cv3',l:'Conversation 👂',d:3,y:tp(9),h:dp(180),bg:'#DDDAF8',tc:'#2A2478',fx:false,cat:{b:0,e:.7,m:.3}},
   meal('lc0','🍱 ランチ',0,12),meal('lc1','🍱 ランチ',1,12),meal('lc2','🍱 ランチ',2,12),
   meal('lc3','🍱 ランチ',3,12),meal('lc4','🍱 ランチ',4,12),meal('lc5','🍱 ランチ',5,12),meal('lc6','🍱 ランチ',6,12),
-  meal('dc0','🍽️ 夕食',0,18,'#FFF0E8','#7A3A00'),meal('dc1','🍽️ 夕食',1,18,'#FFF0E8','#7A3A00'),
-  meal('dc2','🍽️ 夕食',2,18,'#FFF0E8','#7A3A00'),meal('dc3','🍽️ 夕食',3,18,'#FFF0E8','#7A3A00'),
-  meal('dc4','🍽️ 夕食',4,18,'#FFF0E8','#7A3A00'),meal('dc5','🍽️ 夕食',5,18,'#FFF0E8','#7A3A00'),
-  meal('dc6','🍽️ 夕食',6,18,'#FFF0E8','#7A3A00'),
+  meal('dc0','🍽️ 夕食',0,20,'#FFF0E8','#7A3A00'),meal('dc1','🍽️ 夕食',1,20,'#FFF0E8','#7A3A00'),
+  meal('dc2','🍽️ 夕食',2,20,'#FFF0E8','#7A3A00'),meal('dc3','🍽️ 夕食',3,20,'#FFF0E8','#7A3A00'),
+  meal('dc4','🍽️ 夕食',4,20,'#FFF0E8','#7A3A00'),meal('dc5','🍽️ 夕食',5,20,'#FFF0E8','#7A3A00'),
+  meal('dc6','🍽️ 夕食',6,20,'#FFF0E8','#7A3A00'),
   {id:'om0',l:'発音添削 月締切 👄\n手本10m＋練習1h',d:0,y:tp(13),h:dp(70),bg:'#D0F0E8',tc:'#065045',fx:false,cat:{b:0,e:0,m:1}},
   {id:'ng0',l:'流し聞 👂',d:0,y:tp(14,10),h:dp(60),bg:'transparent',tc:'#73726C',fx:false,cat:null,dash:true},
   {id:'ws0',l:'WS 🧠',d:0,y:tp(15,10),h:dp(120),bg:'#FFF0CC',tc:'#5C3D00',fx:false,cat:{b:1,e:0,m:0}},
@@ -495,8 +501,8 @@ function blockHtml(a,isGhost,isRecord){
   const isShort=a.h<dp(25);
   const ghostCls=isGhost?' ghost':'';
   const timeStr=`${fmt(a.y)}–${fmt(a.y+a.h)}`;
-  const canEdit=!a.fx&&!isGhost;
-  const canDelete=canEdit&&(isRecord||a.id.startsWith('m_')||a.id.startsWith('dup_'));
+  const canEdit=!isGhost;
+  const canDelete=!isGhost;
   return`<div class="block${a.fx?' fixed':''}${ghostCls}" data-id="${a.id}" style="top:${a.y}px;height:${visH}px;background:${bg};${bdr}">
     ${canEdit?`<div class="resize-top" data-id="${a.id}" data-dir="top"></div>`:''}
     <div class="block-body" data-id="${a.id}" style="background:${bg};color:${a.tc}">
@@ -549,7 +555,7 @@ function attachEvents(){
     el.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();fn(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
   });
   document.querySelectorAll('.block-body').forEach(el=>{
-    if(el.closest('.block').classList.contains('fixed')||el.closest('.block').classList.contains('ghost'))return;
+    if(el.closest('.block').classList.contains('ghost'))return;
     const fn=(cx,cy)=>startDrag(cx,cy,'move',el.dataset.id);
     el.addEventListener('mousedown',e=>fn(e.clientX,e.clientY));
     el.addEventListener('touchstart',e=>{e.preventDefault();fn(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
@@ -559,7 +565,7 @@ function attachEvents(){
 function findBlock(id){return mode==='plan'?planState.find(a=>a.id===id):recState.find(a=>a.id===id)||planState.find(a=>a.id===id);}
 
 function startDrag(cx,cy,type,id){
-  const act=findBlock(id);if(!act||act.fx)return;
+  const act=findBlock(id);if(!act)return;
   // In record mode, can only drag record blocks
   if(mode==='record'&&!recState.find(a=>a.id===id))return;
   const cr=getColRect(act.d);if(!cr)return;
