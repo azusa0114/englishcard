@@ -90,6 +90,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;min-
 .reftable td:first-child{font-weight:500;color:#1A1A18;width:44%}
 .reftable a{color:#3C3489}
 .mcheck{background:#F1EFE8;border-radius:8px;padding:8px 10px;font-size:10px;color:#73726C;line-height:1.8;margin-top:8px}
+
+/* Checkbox & Progress */
+.step{cursor:default}
+.step.done .sa{text-decoration:line-through;opacity:.42}
+.step.done .sd,.step.done .sdv{opacity:.32}
+.step-check{width:15px;height:15px;cursor:pointer;margin-top:3px;flex-shrink:0;accent-color:#3C3489}
+.tab-prog{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px 0}
+.prog-bar{flex:1;height:5px;background:#E8E5DF;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:#3C3489;border-radius:3px;transition:width .25s}
+.prog-text{font-size:11px;color:#73726C;white-space:nowrap;min-width:36px;text-align:right}
+.prog-reset{font-family:inherit;font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #D9D6CF;background:#F1EFE8;color:#73726C;cursor:pointer}
+.prog-reset:hover{background:#E8E5DF}
 </style>
 </head>
 <body>
@@ -111,6 +123,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;min-
     <button class="mtb" onclick="showTab(this,'listen')">短文L</button>
     <button class="mtb" onclick="showTab(this,'cambly')">Cambly</button>
     <button class="mtb" onclick="showTab(this,'ref')">参照</button>
+    <button class="mtb" onclick="showTab(this,'afterclass')">授業後To-Do</button>
   </div>
 
   <!-- WS -->
@@ -299,6 +312,60 @@ body{font-family:'Noto Sans JP',sans-serif;background:#F5F4EF;color:#1A1A18;min-
       </div>
     </div>
   </div>
+
+
+  <!-- After Class To-Do tab -->
+  <!-- After Class To-Do tab -->
+  <div class="mtc" id="afterclass">
+    <div class="card">
+      <div class="card-title">📋 授業後 To-Do</div>
+      <div class="info">クラスが終わったらここをチェック ✦ 毎回リセットして使う</div>
+
+      <div class="sub">👄 Speaking</div>
+      <div class="step">
+        <div class="sn">1</div>
+        <div>
+          <div class="sa">言いたかったのに言えなかったことを投げる <span class="badge bp">〜5 min</span></div>
+          <div class="sd">表現・文・トピックなんでもOK → 一緒に直す</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div>
+          <div class="sa">今日のトピックで1〜2分独り言（タイマーON） <span class="badge bp">〜5 min</span></div>
+          <div class="sd">録音して聞き返す → どこで詰まったかメモ</div>
+        </div>
+      </div>
+
+      <div class="sub">👂 Listening</div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div>
+          <div class="sa">OSH音源でディクテーション（スクリプト見ずに聞いて書く） <span class="badge bo">10〜15 min</span></div>
+          <div class="sd">スクリプトと照合 → 聞き取れなかった音だけオーバーラッピング</div>
+        </div>
+      </div>
+
+      <div class="sub">📚 Vocab</div>
+      <div class="step">
+        <div class="sn">4</div>
+        <div>
+          <div class="sa">今日出てきた表現・単語を投げる <span class="badge bp">〜5 min</span></div>
+          <div class="sd">文脈ごとメモしたやつ → 使う練習を一緒にやる</div>
+        </div>
+      </div>
+
+      <div class="sub">✦ Optional</div>
+      <div class="step">
+        <div class="sn">5</div>
+        <div>
+          <div class="sa">WPM測定（4週間に1回） <span class="badge" style="background:#F1EFE8;color:#73726C">5 min</span></div>
+          <div class="sd"><a href="https://urbanmeetup.tokyo/wpm-counter" target="_blank" style="color:#3C3489">urbanmeetup.tokyo/wpm-counter</a> で確認 → 記録しておく</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ========== PAGE 2: スケジュール ========== -->
@@ -393,6 +460,70 @@ function showTab(btn, id) {
   document.getElementById(id).classList.add('on');
   btn.classList.add('on');
 }
+
+// ── Checkbox / Progress ──────────────────────
+const TAB_IDS=['ws','wsrev','onsei','yari','listen','cambly','ref','afterclass'];
+
+function initChecks(){
+  TAB_IDS.forEach(tid=>{
+    const tabEl=document.getElementById(tid);
+    if(!tabEl)return;
+    // Insert progress bar before first child
+    const prog=document.createElement('div');
+    prog.className='tab-prog';
+    prog.innerHTML=`<div class="prog-bar"><div class="prog-fill" id="pf-${tid}"></div></div><span class="prog-text" id="pt-${tid}">0/0</span><button class="prog-reset" onclick="resetTab('${tid}')">↺ リセット</button>`;
+    tabEl.insertBefore(prog,tabEl.firstChild);
+    // Inject checkboxes into each step
+    tabEl.querySelectorAll('.step').forEach((step,i)=>{
+      const cb=document.createElement('input');
+      cb.type='checkbox';cb.className='step-check';
+      cb.style.cssText='width:15px;height:15px;cursor:pointer;margin-top:3px;flex-shrink:0;accent-color:#3C3489';
+      cb.addEventListener('change',()=>{
+        step.classList.toggle('done',cb.checked);
+        saveAndUpdate(tid);
+      });
+      step.insertBefore(cb,step.firstChild);
+    });
+    loadChecks(tid);
+  });
+}
+
+function saveAndUpdate(tid){
+  const checks=[...document.getElementById(tid).querySelectorAll('.step-check')].map(c=>c.checked);
+  try{localStorage.setItem('chk_'+tid,JSON.stringify(checks));}catch(e){}
+  updateBar(tid);
+}
+
+function loadChecks(tid){
+  try{
+    const saved=localStorage.getItem('chk_'+tid);
+    if(saved){
+      JSON.parse(saved).forEach((v,i)=>{
+        const steps=document.getElementById(tid).querySelectorAll('.step-check');
+        if(steps[i]&&v){steps[i].checked=true;steps[i].closest('.step')?.classList.add('done');}
+      });
+    }
+  }catch(e){}
+  updateBar(tid);
+}
+
+function updateBar(tid){
+  const checks=[...document.getElementById(tid).querySelectorAll('.step-check')];
+  const total=checks.length,done=checks.filter(c=>c.checked).length;
+  const fill=document.getElementById('pf-'+tid),text=document.getElementById('pt-'+tid);
+  if(fill)fill.style.width=(total>0?done/total*100:0)+'%';
+  if(text)text.textContent=done+'/'+total;
+}
+
+function resetTab(tid){
+  document.getElementById(tid).querySelectorAll('.step-check').forEach(c=>{
+    c.checked=false;c.closest('.step')?.classList.remove('done');
+  });
+  saveAndUpdate(tid);
+}
+
+document.addEventListener('DOMContentLoaded',initChecks);
+
 </script>
 </body>
 </html>
