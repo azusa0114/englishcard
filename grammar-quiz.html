@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>品詞クイズ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --noun:#f97316; --noun-bg:rgba(249,115,22,0.15); --noun-bd:rgba(249,115,22,0.4);
+    --verb:#3b82f6; --verb-bg:rgba(59,130,246,0.15);  --verb-bd:rgba(59,130,246,0.4);
+    --adj:#eab308;  --adj-bg:rgba(234,179,8,0.15);    --adj-bd:rgba(234,179,8,0.4);
+    --adv:#a855f7;  --adv-bg:rgba(168,85,247,0.15);   --adv-bd:rgba(168,85,247,0.4);
+    --s:#ef4444; --s-bg:rgba(239,68,68,0.15);   --s-bd:rgba(239,68,68,0.4);
+    --v:#3b82f6; --v-bg:rgba(59,130,246,0.15);  --v-bd:rgba(59,130,246,0.4);
+    --o:#f97316; --o-bg:rgba(249,115,22,0.15);  --o-bd:rgba(249,115,22,0.4);
+    --c:#22c55e; --c-bg:rgba(34,197,94,0.15);   --c-bd:rgba(34,197,94,0.4);
+    --m:#a855f7; --m-bg:rgba(168,85,247,0.15);  --m-bd:rgba(168,85,247,0.4);
+    --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e;
+    --text:#d4d4e0; --muted:#666;
+    --correct:#22c55e; --wrong:#ef4444;
+  }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'Noto Sans JP',sans-serif;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:24px 16px 48px;
+  }
+  .header { text-align:center; margin-bottom:28px; }
+  .header h1 {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(32px,7vw,56px); letter-spacing:5px; color:#fff; margin-bottom:4px;
+  }
+  .header p { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:2px; }
+
+  .progress-bar-wrap { width:100%; max-width:620px; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+  .progress-bar-bg { flex:1; height:4px; background:#1e1e2e; border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#a855f7); border-radius:2px; transition:width 0.4s ease; }
+  .progress-label { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); white-space:nowrap; }
+
+  .score-bar { width:100%; max-width:620px; display:flex; justify-content:space-between; margin-bottom:20px; }
+  .score-item { display:flex; align-items:center; gap:6px; font-family:'Space Mono',monospace; font-size:12px; }
+  .score-dot { width:8px; height:8px; border-radius:50%; }
+  .dot-correct { background:var(--correct); }
+  .dot-wrong   { background:var(--wrong); }
+
+  /* ===== クイズカード ===== */
+  .quiz-card {
+    width:100%; max-width:620px; background:var(--surface);
+    border:1px solid var(--border); border-radius:16px; padding:24px 22px;
+    margin-bottom:16px; position:relative; overflow:hidden;
+  }
+  .quiz-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,var(--s),var(--v),var(--o),var(--c),var(--m));
+  }
+  .quiz-type { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--muted); margin-bottom:14px; }
+  .quiz-type span { padding:2px 8px; border-radius:4px; font-size:10px; }
+  .quiz-sentence {
+    font-size:clamp(16px,4vw,22px); font-weight:700; line-height:1.5;
+    margin-bottom:8px; letter-spacing:1px; font-family:'Space Mono',monospace;
+  }
+  .target-word { display:inline-block; border-bottom:3px solid #fff; padding-bottom:1px; position:relative; }
+  .target-word::after { content:'?'; position:absolute; top:-14px; left:50%; transform:translateX(-50%); font-size:11px; color:#fff; }
+  .quiz-question { font-size:13px; color:#999; margin-bottom:20px; line-height:1.6; }
+
+  /* 通常選択肢 */
+  .choices { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .choice-btn {
+    background:#0d0d16; border:1px solid var(--border); border-radius:10px;
+    padding:13px 14px; color:var(--text);
+    font-family:'Noto Sans JP',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; transition:all 0.15s ease; text-align:left;
+  }
+  .choice-btn:hover:not(:disabled) { border-color:#444; background:#13131e; transform:translateY(-1px); }
+  .choice-btn .choice-key { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); display:block; margin-bottom:3px; }
+  .choice-btn.correct { border-color:var(--correct); background:rgba(34,197,94,0.12); color:var(--correct); }
+  .choice-btn.wrong   { border-color:var(--wrong);   background:rgba(239,68,68,0.12);  color:var(--wrong); }
+  .choice-btn:disabled { cursor:default; }
+
+  /* ===== 間違い探しチャート ===== */
+  .chart-area { margin-bottom:20px; }
+  .chart-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:12px; }
+
+  /* 文+SVOCラベルの行 */
+  .chart-row {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;
+    background:#0d0d16; border:1px solid var(--border); border-radius:10px; padding:16px;
+    margin-bottom:14px;
+  }
+  .chart-token { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .chart-word {
+    font-family:'Space Mono',monospace; font-size:clamp(13px,3vw,17px);
+    font-weight:700; color:#e8e8f0; padding:6px 10px;
+    background:#111118; border:1px solid #222; border-radius:6px;
+    white-space:nowrap;
+  }
+  /* クリック可能なラベル */
+  .chart-tag {
+    font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:1px;
+    padding:3px 10px; border-radius:5px; cursor:pointer;
+    transition:all 0.15s; border:2px solid transparent; user-select:none;
+    white-space:nowrap;
+  }
+  .chart-tag:hover { transform:translateY(-2px); filter:brightness(1.2); }
+  .chart-tag.selected-wrong { border-color:var(--wrong) !important; box-shadow:0 0 0 2px rgba(239,68,68,0.3); }
+  .chart-tag.selected-correct { border-color:var(--correct) !important; box-shadow:0 0 0 2px rgba(34,197,94,0.3); }
+  .chart-tag.reveal-error { border-color:var(--wrong) !important; animation:shake 0.4s ease; }
+  .chart-tag.reveal-correct-answer { border-color:var(--correct) !important; }
+  .chart-tag[data-role="S"]  { background:var(--s-bg); color:var(--s); }
+  .chart-tag[data-role="V"]  { background:var(--v-bg); color:var(--v); }
+  .chart-tag[data-role="O"]  { background:var(--o-bg); color:var(--o); }
+  .chart-tag[data-role="C"]  { background:var(--c-bg); color:var(--c); }
+  .chart-tag[data-role="M"]  { background:var(--m-bg); color:var(--m); }
+  /* 品詞ラベル */
+  .chart-pos {
+    font-family:'Space Mono',monospace; font-size:10px;
+    padding:2px 7px; border-radius:3px;
+  }
+  .chart-pos[data-pos="名詞"]  { background:var(--noun-bg); color:var(--noun); }
+  .chart-pos[data-pos="動詞"]  { background:var(--verb-bg); color:var(--verb); }
+  .chart-pos[data-pos="形容詞"]{ background:var(--adj-bg);  color:var(--adj); }
+  .chart-pos[data-pos="副詞"]  { background:var(--adv-bg);  color:var(--adv); }
+  .chart-pos.reveal-error { outline:2px solid var(--wrong); animation:shake 0.4s ease; }
+  .chart-pos.reveal-correct-answer { outline:2px solid var(--correct); }
+  .chart-pos[data-clickable="true"] { cursor:pointer; transition:all 0.15s; }
+  .chart-pos[data-clickable="true"]:hover { filter:brightness(1.3); transform:translateY(-1px); }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-4px)}
+    75%{transform:translateX(4px)}
+  }
+
+  /* ===== フィードバック ===== */
+  .feedback {
+    width:100%; max-width:620px; border-radius:12px; padding:16px 20px;
+    margin-bottom:16px; display:none; animation:slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .feedback.correct { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); }
+  .feedback.wrong   { background:rgba(239,68,68,0.1);  border:1px solid rgba(239,68,68,0.3); }
+  .feedback-title { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; margin-bottom:6px; }
+  .feedback.correct .feedback-title { color:var(--correct); }
+  .feedback.wrong   .feedback-title { color:var(--wrong); }
+  .feedback-body { font-size:12px; color:#c8c8d8; line-height:1.8; }
+  .hl-noun{color:var(--noun);font-weight:700} .hl-verb{color:var(--verb);font-weight:700}
+  .hl-adj{color:var(--adj);font-weight:700}   .hl-adv{color:var(--adv);font-weight:700}
+  .hl-s{color:var(--s);font-weight:700} .hl-v{color:var(--v);font-weight:700}
+  .hl-o{color:var(--o);font-weight:700} .hl-c{color:var(--c);font-weight:700}
+
+  .nav-btn {
+    width:100%; max-width:620px; padding:14px; border-radius:10px; border:none;
+    background:linear-gradient(135deg,#1e1e3a,#2a1a3e); color:#d4d4e0;
+    font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:3px;
+    cursor:pointer; display:none; transition:all 0.2s ease;
+  }
+  .nav-btn:hover { background:linear-gradient(135deg,#252545,#321f4a); transform:translateY(-1px); }
+
+  /* 結果画面 */
+  .result-screen { display:none; width:100%; max-width:620px; text-align:center; }
+  .result-score {
+    font-family:'Bebas Neue',sans-serif; font-size:clamp(60px,15vw,100px);
+    letter-spacing:4px; line-height:1; margin:16px 0 8px;
+  }
+  .result-label { font-family:'Space Mono',monospace; font-size:12px; color:var(--muted); letter-spacing:2px; margin-bottom:28px; }
+  .result-breakdown { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:24px; text-align:left; }
+  .breakdown-title { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--muted); margin-bottom:14px; }
+  .breakdown-row { display:flex; align-items:center; padding:8px 0; border-bottom:1px solid #1a1a24; font-size:13px; gap:8px; }
+  .breakdown-row:last-child { border-bottom:none; }
+  .breakdown-mark { font-size:16px; flex-shrink:0; }
+  .breakdown-q { flex:1; color:#aaa; font-size:12px; }
+  .breakdown-a { font-family:'Space Mono',monospace; font-size:11px; flex-shrink:0; }
+  .correct-a { color:var(--correct); } .wrong-a { color:var(--wrong); }
+  .retry-btn {
+    width:100%; padding:16px; border-radius:10px; border:none;
+    background:linear-gradient(135deg,#1e3a2a,#1a2e3e); color:var(--correct);
+    font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px;
+    cursor:pointer; transition:all 0.2s ease;
+  }
+  .retry-btn:hover { opacity:0.85; transform:translateY(-1px); }
+  .ic { display:inline-block; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; padding:1px 7px; border-radius:4px; }
+  .ic-noun{background:var(--noun-bg);color:var(--noun);border:1px solid var(--noun-bd)}
+  .ic-verb{background:var(--verb-bg);color:var(--verb);border:1px solid var(--verb-bd)}
+  .ic-adj{background:var(--adj-bg);color:var(--adj);border:1px solid var(--adj-bd)}
+  .ic-adv{background:var(--adv-bg);color:var(--adv);border:1px solid var(--adv-bd)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>GRAMMAR QUIZ</h1>
+  <p>中級 — 品詞 × SVOC × 間違い探しミックス</p>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">1 / 18</div>
+</div>
+<div class="score-bar">
+  <div class="score-item"><div class="score-dot dot-correct"></div><span id="correctCount">正解 0</span></div>
+  <div class="score-item"><div class="score-dot dot-wrong"></div><span id="wrongCount">不正解 0</span></div>
+</div>
+
+<div class="quiz-card" id="quizCard">
+  <div class="quiz-type" id="quizType"></div>
+  <div id="quizSentence" class="quiz-sentence"></div>
+  <div id="chartArea" class="chart-area" style="display:none"></div>
+  <div id="quizQuestion" class="quiz-question"></div>
+  <div id="choices" class="choices"></div>
+</div>
+
+<div class="feedback" id="feedback">
+  <div class="feedback-title" id="feedbackTitle"></div>
+  <div class="feedback-body" id="feedbackBody"></div>
+</div>
+<button class="nav-btn" id="navBtn" onclick="nextQuestion()">次の問題 →</button>
+
+<div class="result-screen" id="resultScreen">
+  <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;">RESULT</div>
+  <div class="result-score" id="resultScore"></div>
+  <div class="result-label" id="resultLabel"></div>
+  <div class="result-breakdown">
+    <div class="breakdown-title">QUESTION REVIEW</div>
+    <div id="breakdownList"></div>
+  </div>
+  <button class="retry-btn" onclick="startQuiz()">もう一度挑戦する</button>
+</div>
+
+<script>
+// ============================================================
+// 問題データ
+// type: "choice" = 選択肢問題
+// type: "find"   = 間違い探し（チャートのラベルをクリック）
+// ============================================================
+const QUESTIONS = [
+  // ── 選択肢問題（既存）──────────────────────────────
+  {
+    kind:"choice", type:"品詞を当てる", typeColor:"#f97316",
+    sentence:"She runs <span class='target-word'>quickly</span> every morning.",
+    question:"下線の単語 quickly の品詞は？",
+    choices:["名詞","形容詞","副詞","動詞"], answer:2,
+    explanation:"<span class='hl-adv'>quickly</span> は <span class='hl-verb'>runs</span>（動詞）を修飾する<span class='hl-adv'>副詞</span>。<span class='hl-adv'>副詞</span>は<span class='hl-verb'>動詞</span>・<span class='hl-adj'>形容詞</span>・他の<span class='hl-adv'>副詞</span>を修飾します。"
+  },
+  {
+    kind:"choice", type:"SVOC を当てる", typeColor:"#22c55e",
+    sentence:"The <span class='target-word'>music</span> makes me happy.",
+    question:"下線の単語 music の文中での役割は？",
+    choices:["S（主語）","V（動詞）","O（目的語）","C（補語）"], answer:0,
+    explanation:"<span class='hl-s'>The music</span> が主語（S）です。make O C の構文で music＝S、make＝V、me＝O、happy＝Cです。"
+  },
+  {
+    kind:"choice", type:"品詞を当てる", typeColor:"#f97316",
+    sentence:"That was a <span class='target-word'>beautiful</span> sunset.",
+    question:"下線の単語 beautiful の品詞は？",
+    choices:["名詞","副詞","動詞","形容詞"], answer:3,
+    explanation:"<span class='hl-adj'>beautiful</span> は <span class='hl-noun'>sunset</span>（名詞）を直接修飾する<span class='hl-adj'>形容詞</span>。<span class='hl-adv'>副詞</span>は<span class='hl-noun'>名詞</span>を修飾できません。"
+  },
+  {
+    kind:"choice", type:"Cに入れる品詞", typeColor:"#22c55e",
+    sentence:"He looks ___.",
+    question:"空欄Cに入れられるのはどれ？",
+    choices:["tired（形容詞）","quickly（副詞）","beautifully（副詞）","there（副詞）"], answer:0,
+    explanation:"補語（C）には<span class='hl-adj'>形容詞</span>か<span class='hl-noun'>名詞</span>のみ。<span class='hl-adv'>副詞</span>はCになれません。"
+  },
+  {
+    kind:"choice", type:"SVOC を当てる", typeColor:"#22c55e",
+    sentence:"They called him <span class='target-word'>a genius</span>.",
+    question:"下線部 a genius の役割は？（第5文型）",
+    choices:["S（主語）","O（目的語）","C（補語）","M（修飾語）"], answer:2,
+    explanation:"call O C の第5文型。<span class='hl-o'>him</span>＝O、<span class='hl-c'>a genius</span>＝C。O＝Cの関係。CはOの同一性を説明する<span class='hl-noun'>名詞</span>。"
+  },
+  {
+    kind:"choice", type:"品詞を当てる", typeColor:"#f97316",
+    sentence:"She speaks English <span class='target-word'>fluently</span>.",
+    question:"下線の単語 fluently の品詞は？",
+    choices:["形容詞","名詞","副詞","動詞"], answer:2,
+    explanation:"<span class='hl-adv'>fluently</span> は <span class='hl-verb'>speaks</span> を修飾する<span class='hl-adv'>副詞</span>。fluent（<span class='hl-adj'>形容詞</span>）に -ly をつけて<span class='hl-adv'>副詞</span>化。"
+  },
+  {
+    kind:"choice", type:"SVOCを当てる", typeColor:"#22c55e",
+    sentence:"This coffee smells <span class='target-word'>wonderful</span>.",
+    question:"下線の単語 wonderful の役割は？（第2文型）",
+    choices:["O（目的語）","C（補語）","M（修飾語）","S（主語）"], answer:1,
+    explanation:"smell は SVC文型の動詞。<span class='hl-c'>wonderful</span> は主語の「状態」を説明する補語（C）。<span class='hl-adj'>形容詞</span>なのでCになれます。"
+  },
+  {
+    kind:"choice", type:"Cに入れる品詞", typeColor:"#22c55e",
+    sentence:"She became ___.",
+    question:"補語（C）として正しく入るのはどれ？",
+    choices:["a doctor（名詞）","slowly（副詞）","outside（副詞）","very（副詞）"], answer:0,
+    explanation:"become はSVC動詞。Cには<span class='hl-noun'>名詞</span>か<span class='hl-adj'>形容詞</span>のみ。<span class='hl-noun'>a doctor</span>なら She＝a doctor の同一性を表せます。"
+  },
+  {
+    kind:"choice", type:"品詞を当てる", typeColor:"#f97316",
+    sentence:"The meeting was <span class='target-word'>cancelled</span>.",
+    question:"下線の単語 cancelled の品詞は？",
+    choices:["名詞","形容詞","副詞","動詞（過去分詞）"], answer:3,
+    explanation:"<span class='hl-verb'>cancelled</span> はbe動詞と受動態を作る<span class='hl-verb'>動詞</span>（過去分詞）。was cancelled で「キャンセルされた」というV（述語動詞）です。"
+  },
+  {
+    kind:"choice", type:"SVOC を当てる", typeColor:"#22c55e",
+    sentence:"<span class='target-word'>Studying</span> grammar is fun.",
+    question:"下線部 Studying の役割は？（動名詞）",
+    choices:["V（動詞）","C（補語）","S（主語）","M（修飾語）"], answer:2,
+    explanation:"<span class='hl-noun'>Studying grammar</span> は動名詞句として文全体の主語（S）。動名詞（V-ing）は<span class='hl-noun'>名詞</span>と同じ働きをするためS・O・Cになれます。"
+  },
+  {
+    kind:"choice", type:"品詞を当てる", typeColor:"#f97316",
+    sentence:"He gave me <span class='target-word'>advice</span>.",
+    question:"下線の単語 advice の品詞は？（第4文型）",
+    choices:["動詞","副詞","形容詞","名詞"], answer:3,
+    explanation:"give O₁ O₂ の第4文型。<span class='hl-noun'>advice</span> はO₂として機能する<span class='hl-noun'>名詞</span>。目的語（O）には<span class='hl-noun'>名詞</span>系のみ入ります。"
+  },
+
+  // ── 間違い探し問題 ─────────────────────────────────
+  {
+    kind:"find", type:"間違い探し — SVOCラベル", typeColor:"#a855f7",
+    question:"チャートの中で間違っているラベルはどれ？タップして指摘してください。",
+    // tokens: { word, role（表示するラベル）, pos（品詞）, wrongIdx（間違いのtokenのindex） }
+    tokens:[
+      { word:"She",      role:"S", pos:"名詞" },
+      { word:"made",     role:"V", pos:"動詞" },
+      { word:"him",      role:"C", pos:"名詞" },   // ← 間違い：OではなくCになっている
+      { word:"happy",    role:"C", pos:"形容詞" },
+    ],
+    wrongIdx:2, // him のSVOCラベルが間違い
+    clickTarget:"role", // roleラベルをクリックさせる
+    correctLabel:"O",
+    explanation:"<span class='hl-o'>him</span> は make O C の目的語（<span class='hl-o'>O</span>）です。CではなくOが正解。happy が補語（<span class='hl-c'>C</span>）で、him＝happy（Oの状態をCが説明）という関係です。"
+  },
+  {
+    kind:"find", type:"間違い探し — 品詞ラベル", typeColor:"#a855f7",
+    question:"チャートの品詞ラベルで間違っているのはどれ？タップして指摘してください。",
+    tokens:[
+      { word:"The",      role:"S", pos:"名詞" },
+      { word:"dog",      role:"S", pos:"名詞" },
+      { word:"barks",    role:"V", pos:"名詞" },  // ← 間違い：動詞なのに名詞になっている
+      { word:"loudly",   role:"M", pos:"副詞" },
+    ],
+    wrongIdx:2, // barks の品詞ラベルが間違い
+    clickTarget:"pos",
+    correctLabel:"動詞",
+    explanation:"<span class='hl-verb'>barks</span> は「吠える」という<span class='hl-verb'>動詞</span>です。述語動詞（V）には必ず<span class='hl-verb'>動詞</span>が入ります。<span class='hl-noun'>名詞</span>はVにはなれません。"
+  },
+  {
+    kind:"find", type:"間違い探し — SVOCラベル", typeColor:"#a855f7",
+    question:"チャートの中で間違っているSVOCラベルはどれ？",
+    tokens:[
+      { word:"I",        role:"S", pos:"名詞" },
+      { word:"find",     role:"V", pos:"動詞" },
+      { word:"this",     role:"O", pos:"名詞" },
+      { word:"quickly",  role:"C", pos:"副詞" }, // ← 間違い：副詞はCになれない→M
+    ],
+    wrongIdx:3,
+    clickTarget:"role",
+    correctLabel:"M",
+    explanation:"<span class='hl-adv'>quickly</span> は<span class='hl-adv'>副詞</span>なので補語（<span class='hl-c'>C</span>）にはなれません。<span class='hl-adv'>副詞</span>が文を修飾している場合は修飾語（M）です。Cには<span class='hl-noun'>名詞</span>か<span class='hl-adj'>形容詞</span>のみ入ります。"
+  },
+  {
+    kind:"find", type:"間違い探し — 品詞ラベル", typeColor:"#a855f7",
+    question:"品詞ラベルで間違っているのはどれ？",
+    tokens:[
+      { word:"She",      role:"S", pos:"名詞" },
+      { word:"looks",    role:"V", pos:"動詞" },
+      { word:"very",     role:"M", pos:"形容詞" }, // ← 間違い：very は副詞
+      { word:"tired",    role:"C", pos:"形容詞" },
+    ],
+    wrongIdx:2,
+    clickTarget:"pos",
+    correctLabel:"副詞",
+    explanation:"<span class='hl-adv'>very</span> は<span class='hl-adj'>形容詞</span>ではなく<span class='hl-adv'>副詞</span>です。<span class='hl-adj'>tired</span>（形容詞）を修飾しています。<span class='hl-adv'>副詞</span>→<span class='hl-adj'>形容詞</span>への修飾は典型的なパターンです。"
+  },
+  {
+    kind:"find", type:"間違い探し — SVOCラベル", typeColor:"#a855f7",
+    question:"チャートで間違っているSVOCラベルはどれ？（第2文型）",
+    tokens:[
+      { word:"The",      role:"S", pos:"名詞" },
+      { word:"soup",     role:"S", pos:"名詞" },
+      { word:"smells",   role:"V", pos:"動詞" },
+      { word:"delicious",role:"O", pos:"形容詞" }, // ← 間違い：SVC文型なのでCが正解
+    ],
+    wrongIdx:3,
+    clickTarget:"role",
+    correctLabel:"C",
+    explanation:"smell は第2文型（SVC）の動詞。<span class='hl-adj'>delicious</span>（形容詞）は目的語（<span class='hl-o'>O</span>）ではなく補語（<span class='hl-c'>C</span>）です。SVC文型に目的語（O）はなく、S＝Cの関係を作ります。"
+  },
+  {
+    kind:"find", type:"間違い探し — 品詞ラベル", typeColor:"#a855f7",
+    question:"品詞ラベルで間違っているのはどれ？",
+    tokens:[
+      { word:"Running",  role:"S", pos:"動詞" }, // ← 間違い：動名詞は名詞扱い
+      { word:"daily",    role:"M", pos:"副詞" },
+      { word:"is",       role:"V", pos:"動詞" },
+      { word:"healthy",  role:"C", pos:"形容詞" },
+    ],
+    wrongIdx:0,
+    clickTarget:"pos",
+    correctLabel:"名詞",
+    explanation:"<span class='hl-noun'>Running</span> は動名詞（Gerund）で、文の主語（S）として機能しています。動名詞は形こそ動詞ですが、文法上の品詞は<span class='hl-noun'>名詞</span>として扱います。"
+  },
+  {
+    kind:"find", type:"間違い探し — SVOCラベル", typeColor:"#a855f7",
+    question:"チャートで間違っているSVOCラベルはどれ？（第4文型）",
+    tokens:[
+      { word:"He",       role:"S", pos:"名詞" },
+      { word:"gave",     role:"V", pos:"動詞" },
+      { word:"her",      role:"C", pos:"名詞" }, // ← 間違い：O₁ が正解
+      { word:"a",        role:"O", pos:"名詞" },
+      { word:"gift",     role:"O", pos:"名詞" },
+    ],
+    wrongIdx:2,
+    clickTarget:"role",
+    correctLabel:"O",
+    explanation:"give O₁ O₂ の第4文型。<span class='hl-o'>her</span> は補語（C）ではなく間接目的語（<span class='hl-o'>O</span>）です。第4文型にCはなく、O₁（人）＋O₂（もの）の二つの目的語を取ります。"
+  },
+];
+
+let current=0, correct=0, wrong=0, answered=false, results=[], shuffled=[];
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function startQuiz(){
+  current=0;correct=0;wrong=0;answered=false;results=[];
+  shuffled=shuffle(QUESTIONS);
+  document.getElementById('resultScreen').style.display='none';
+  document.getElementById('quizCard').style.display='block';
+  document.getElementById('navBtn').style.display='none';
+  document.getElementById('feedback').style.display='none';
+  updateScoreBar(); renderQuestion();
+}
+
+function renderQuestion(){
+  const q=shuffled[current];
+  answered=false;
+
+  document.getElementById('progressFill').style.width=(current/shuffled.length*100)+'%';
+  document.getElementById('progressLabel').textContent=(current+1)+' / '+shuffled.length;
+  document.getElementById('quizType').innerHTML=
+    `<span style="background:${q.typeColor}22;color:${q.typeColor};border:1px solid ${q.typeColor}66;padding:2px 8px;border-radius:4px;">${q.type}</span>`;
+  document.getElementById('quizQuestion').textContent=q.question;
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('navBtn').style.display='none';
+
+  if(q.kind==='choice'){
+    document.getElementById('quizSentence').innerHTML=q.sentence;
+    document.getElementById('quizSentence').style.display='block';
+    document.getElementById('chartArea').style.display='none';
+    renderChoices(q);
+  } else {
+    document.getElementById('quizSentence').style.display='none';
+    renderChart(q);
+    document.getElementById('choices').innerHTML='';
+  }
+}
+
+function renderChoices(q){
+  const keys=['A','B','C','D'];
+  const el=document.getElementById('choices');
+  el.innerHTML='';
+  el.style.gridTemplateColumns='1fr 1fr';
+  q.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';
+    btn.innerHTML=`<span class="choice-key">${keys[i]}</span>${c}`;
+    btn.onclick=()=>selectAnswer(i);
+    el.appendChild(btn);
+  });
+}
+
+function renderChart(q){
+  const area=document.getElementById('chartArea');
+  area.style.display='block';
+  area.innerHTML=`<div class="chart-label">▸ ${q.clickTarget==='role'?'SVOCラベル':'品詞ラベル'}をタップして間違いを指摘</div><div class="chart-row" id="chartRow"></div>`;
+  const row=document.getElementById('chartRow');
+  q.tokens.forEach((t,i)=>{
+    const tok=document.createElement('div');
+    tok.className='chart-token';
+
+    const wordEl=document.createElement('div');
+    wordEl.className='chart-word';
+    wordEl.textContent=t.word;
+
+    const roleEl=document.createElement('div');
+    roleEl.className='chart-tag';
+    roleEl.dataset.role=t.role;
+    roleEl.dataset.idx=i;
+    roleEl.textContent=t.role;
+    if(q.clickTarget==='role'){
+      roleEl.style.cursor='pointer';
+      roleEl.onclick=()=>selectChartItem(i,'role');
+    }
+
+    const posEl=document.createElement('div');
+    posEl.className='chart-pos';
+    posEl.dataset.pos=t.pos;
+    posEl.dataset.idx=i;
+    posEl.textContent=t.pos;
+    if(q.clickTarget==='pos'){
+      posEl.dataset.clickable='true';
+      posEl.onclick=()=>selectChartItem(i,'pos');
+    }
+
+    tok.appendChild(wordEl);
+    tok.appendChild(roleEl);
+    tok.appendChild(posEl);
+    row.appendChild(tok);
+  });
+}
+
+function selectChartItem(idx, target){
+  if(answered) return;
+  answered=true;
+  const q=shuffled[current];
+  const isCorrect=(idx===q.wrongIdx);
+
+  // 視覚フィードバック
+  const tags=target==='role'
+    ? document.querySelectorAll('.chart-tag')
+    : document.querySelectorAll('.chart-pos');
+
+  tags.forEach((el,i)=>{
+    if(i===q.wrongIdx) el.classList.add('reveal-error');
+    if(i===idx && isCorrect) { el.classList.remove('reveal-error'); el.classList.add('selected-correct'); }
+    if(i===idx && !isCorrect) el.classList.add('selected-wrong');
+  });
+  // 正解の場所も明示
+  tags[q.wrongIdx].classList.add('reveal-error');
+  if(isCorrect) tags[q.wrongIdx].classList.remove('reveal-error'), tags[q.wrongIdx].classList.add('reveal-correct-answer');
+
+  showFeedback(isCorrect, q, q.tokens[q.wrongIdx].word);
+}
+
+function selectAnswer(idx){
+  if(answered) return;
+  answered=true;
+  const q=shuffled[current];
+  const isCorrect=(idx===q.answer);
+  document.querySelectorAll('.choice-btn').forEach((btn,i)=>{
+    btn.disabled=true;
+    if(i===q.answer) btn.classList.add('correct');
+    else if(i===idx&&!isCorrect) btn.classList.add('wrong');
+  });
+  showFeedback(isCorrect, q, q.choices[q.answer]);
+}
+
+function showFeedback(isCorrect, q, answerLabel){
+  if(isCorrect){ correct++; document.getElementById('feedbackTitle').textContent='✓ 正解！'; document.getElementById('feedback').className='feedback correct'; }
+  else         { wrong++;   document.getElementById('feedbackTitle').textContent='✗ 不正解'; document.getElementById('feedback').className='feedback wrong'; }
+  document.getElementById('feedbackBody').innerHTML=q.explanation;
+  document.getElementById('feedback').style.display='block';
+  document.getElementById('navBtn').style.display='block';
+  document.getElementById('navBtn').textContent=current<shuffled.length-1?'次の問題 →':'結果を見る →';
+  results.push({q:q.question.slice(0,26)+'…', correct:isCorrect, answer:answerLabel});
+  updateScoreBar();
+}
+
+function updateScoreBar(){
+  document.getElementById('correctCount').textContent='正解 '+correct;
+  document.getElementById('wrongCount').textContent='不正解 '+wrong;
+}
+
+function nextQuestion(){
+  current++;
+  if(current>=shuffled.length){ showResult(); return; }
+  renderQuestion();
+}
+
+function showResult(){
+  document.getElementById('quizCard').style.display='none';
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('navBtn').style.display='none';
+  document.getElementById('resultScreen').style.display='block';
+  const pct=Math.round(correct/shuffled.length*100);
+  const sc=document.getElementById('resultScore');
+  sc.textContent=correct+' / '+shuffled.length;
+  sc.style.color=pct>=80?'#22c55e':pct>=50?'#eab308':'#ef4444';
+  const labels=['もう少し復習しよう','半分以上正解！','上出来！','完璧！'];
+  document.getElementById('resultLabel').textContent=labels[pct<50?0:pct<70?1:pct<100?2:3];
+  document.getElementById('breakdownList').innerHTML=results.map(r=>
+    `<div class="breakdown-row">
+      <span class="breakdown-mark">${r.correct?'✓':'✗'}</span>
+      <span class="breakdown-q">${r.q}</span>
+      <span class="breakdown-a ${r.correct?'correct-a':'wrong-a'}">${r.answer}</span>
+    </div>`).join('');
+}
+
+startQuiz();
+</script>
+</body>
+</html>
