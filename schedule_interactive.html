@@ -130,16 +130,21 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
       <div class="rs" style="background:#AFA9EC;color:#26215C;width:40%">40%</div>
       <div class="rs" style="background:#5DCAA5;color:#04342C;width:25%">25%</div>
     </div>
-    <div class="ratio-lbl" style="margin-top:5px">今週の比率</div>
+    <div class="ratio-lbl" style="margin-top:5px">英語学習 内訳</div>
     <div class="ratio-bar">
       <div class="rs" id="rb" style="background:#FAC775;color:#412402">🧠—%</div>
       <div class="rs" id="re" style="background:#AFA9EC;color:#26215C">👂—%</div>
       <div class="rs" id="rm" style="background:#5DCAA5;color:#04342C">👄—%</div>
     </div>
+    <div class="ratio-lbl" id="workRatioLbl" style="margin-top:5px;display:none">時間全体（食事除く）</div>
+    <div class="ratio-bar" id="workRatioBar" style="display:none">
+      <div class="rs" id="rwk" style="background:#4A5580;color:#E8EEFF">💼—%</div>
+      <div class="rs" id="rst" style="background:#AFA9EC;color:#26215C">英語—%</div>
+      <div class="rs" id="rml" style="background:#D6F5EB;color:#065045">🆓—%</div>
+    </div>
   </div>
   <div class="top-btns">
     <div class="total-lbl" id="totalLbl">— h</div>
-    <button class="tbtn primary" onclick="recordToday()">📸 今週を記録</button>
     <button class="tbtn" onclick="openAddModal()">＋ 追加</button>
     <button class="tbtn" onclick="toggleHistory()">📊 履歴</button>
     <button class="tbtn" onclick="resetAll()">↺ リセット</button>
@@ -152,6 +157,7 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
   <span class="leg"><span class="ld" style="background:#D0F0E8"></span>👄 発音添削</span>
   <span class="leg"><span class="ld" style="background:#FDEBD6"></span>👄 やり直し・Cambly</span>
   <span class="leg"><span class="ld" style="background:#E3E1FB"></span>👂 短文L</span>
+  <span class="leg"><span class="ld" style="background:#E8EEFF;border:1px solid #B0B8E8"></span>💼 仕事</span>
   <span class="leg"><span class="ld" style="background:#FFF5E8;border:1px solid #E8CFA0"></span>🍱🍽️ 食事</span>
 </div>
 
@@ -181,7 +187,8 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
     <div class="mfield">
       <label>カテゴリ（比率）</label>
       <div class="cat-row" id="addCatRow">
-        <button class="cat-btn on" data-cat="brain" onclick="selAddCat(this)">🧠 WS</button>
+        <button class="cat-btn" data-cat="work" onclick="selAddCat(this)">💼 仕事</button>
+        <button class="cat-btn on data-cat="brain" onclick="selAddCat(this)" onclick="selAddCat(this)">🧠 WS</button>
         <button class="cat-btn" data-cat="ear" onclick="selAddCat(this)">👂 L</button>
         <button class="cat-btn" data-cat="mouth" onclick="selAddCat(this)">👄 S</button>
         <button class="cat-btn" data-cat="pron" onclick="selAddCat(this)">👂👄 Pron</button>
@@ -231,7 +238,8 @@ header{background:#1A1A18;padding:9px 14px;display:flex;align-items:center;justi
     <div class="mfield">
       <label>カテゴリ（比率）</label>
       <div class="cat-row" id="editCatRow">
-        <button class="cat-btn" data-cat="brain" onclick="selEditCat(this)">🧠 WS</button>
+        <button class="cat-btn" data-cat="work" onclick="selEditCat(this)">💼 仕事</button>
+        <button class="cat-btn data-cat="brain" onclick="selEditCat(this)" onclick="selEditCat(this)">🧠 WS</button>
         <button class="cat-btn" data-cat="ear" onclick="selEditCat(this)">👂 L</button>
         <button class="cat-btn" data-cat="mouth" onclick="selEditCat(this)">👄 S</button>
         <button class="cat-btn" data-cat="pron" onclick="selEditCat(this)">👂👄 Pron</button>
@@ -292,6 +300,7 @@ var CAT_DEFS={
   conv: {bg:'#DDDAF8',tc:'#2A2478',cat:{b:.2,e:.5,m:.3}},
   meal: {bg:'#FFF5E8',tc:'#7A4A00',cat:null},
   custom:{bg:'#EEEDFE',tc:'#3C3489',cat:null},
+  work: {bg:'#E8EEFF',tc:'#2A3080',cat:null,wk:true},
   none: {bg:'#F1EFE8',tc:'#73726C',cat:null}
 };
 
@@ -344,6 +353,8 @@ var state=ORIG.map(function(a){return Object.assign({},a);});
 var history=[];
 var drag=null,saveTimer=null;
 var dragMoved=false,dragStartX=0,dragStartY=0;
+var _idCtr=Date.now();
+function newId(){return 'u_'+(++_idCtr);}
 
 // ── UI ────────────────────────────────────────
 function setSyncPill(t,c){var el=document.getElementById('syncPill');el.textContent=t;el.className='sync-pill'+(c?' '+c:'');}
@@ -373,6 +384,25 @@ function updateRatio(){
   document.getElementById('re').style.width=ep+'%';document.getElementById('re').textContent='👂'+ep+'%';
   document.getElementById('rm').style.width=mp+'%';document.getElementById('rm').textContent='👄'+mp+'%';
   document.getElementById('totalLbl').textContent=r.total+'h';
+  // Time distribution (separate axis): 仕事 / 英語 / その他（食事・比率外を除く）
+  var wk=0,st=0,ot=0;
+  state.forEach(function(a){
+    var min=a.h/SC;
+    if(a.bdr)return; // 食事は除外
+    if(a.wk)wk+=min;
+    else if(a.cat)st+=min;
+    else ot+=min;
+  });
+  var wt=wk+st+ot;
+  var hasWork=wk>0;
+  document.getElementById('workRatioLbl').style.display=hasWork?'':'none';
+  document.getElementById('workRatioBar').style.display=hasWork?'':'none';
+  if(hasWork&&wt>0){
+    var wp=Math.round(wk/wt*100),sp=Math.round(st/wt*100),op=100-wp-sp;
+    document.getElementById('rwk').style.width=wp+'%';document.getElementById('rwk').textContent='💼'+wp+'%';
+    document.getElementById('rst').style.width=sp+'%';document.getElementById('rst').textContent='📖'+sp+'%';
+    document.getElementById('rml').style.width=op+'%';document.getElementById('rml').textContent='🆓'+op+'%';
+  }
 }
 
 // ── History ───────────────────────────────────
@@ -441,7 +471,7 @@ function submitAdd(){
   if(addCatVal==='custom'&&b+e+m>100){document.getElementById('addWarn').textContent='合計が100%を超えています';return;}
   var cat=buildCat(addCatVal,b,e,m);
   var def=CAT_DEFS[addCatVal]||CAT_DEFS.none;
-  state.push({id:'u_'+Date.now(),l:label,d:addDayVal,y:tp(sh,sm2),h:dp(dur),bg:def.bg,tc:def.tc,fx:false,cat:cat});
+  state.push({id:newId(),l:label,d:addDayVal,y:tp(sh,sm2),h:dp(dur),bg:def.bg,tc:def.tc,fx:false,cat:cat,wk:def.wk||false});
   document.getElementById('addWarn').textContent='';
   closeModal('addModal');render();updateRatio();debouncedSave();
 }
@@ -481,7 +511,7 @@ function saveEdit(){
   var cat=buildCat(editCatVal,b,e,m);
   var def=CAT_DEFS[editCatVal]||CAT_DEFS[catKey(act.cat)]||CAT_DEFS.none;
   act.l=document.getElementById('editLabel').value.trim()||act.l;
-  act.y=tp(sh,sm2);act.h=dp(dur);act.cat=cat;act.bg=def.bg;act.tc=def.tc;
+  act.y=tp(sh,sm2);act.h=dp(dur);act.cat=cat;act.bg=def.bg;act.tc=def.tc;act.wk=def.wk||false;
   document.getElementById('editWarn').textContent='';
   closeModal('editModal');render();updateRatio();debouncedSave();
 }
@@ -603,7 +633,7 @@ function render(){
   cal.innerHTML=html;attachEvents();
 }
 
-function duplicateBlock(id){var src=state.find(function(a){return a.id===id;});if(!src)return;state.push(Object.assign({},src,{id:'u_'+Date.now(),y:Math.min(TH-src.h,src.y+dp(15))}));render();updateRatio();debouncedSave();}
+function duplicateBlock(id){var src=state.find(function(a){return a.id===id;});if(!src)return;state.push(Object.assign({},src,{id:newId(),y:Math.min(TH-src.h,src.y+dp(15))}));render();updateRatio();debouncedSave();}
 function deleteBlock(id){var i=state.findIndex(function(a){return a.id===id;});if(i>=0){state.splice(i,1);render();updateRatio();debouncedSave();}}
 
 function attachEvents(){
